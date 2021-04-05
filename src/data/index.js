@@ -1,0 +1,100 @@
+import yaml from "js-yaml";
+import fs from "fs";
+import InvalidConfigError from "../errors/invalid-config-error";
+
+const database = {
+  items: [],
+  map: {}
+};
+
+const ItemTypes = ["weapon", "base", "charm", "bait"];
+
+const aliases = loadYamlFile("../../user/alias.yml");
+
+function loadYamlFile(fileName) {
+  try {
+    const file = fs.readFileSync(new URL(fileName, import.meta.url), "utf-8");
+    return yaml.load(file);
+  } catch (err) {
+    return {};
+  }
+
+}
+
+function loadItemFile({ fileName, itemType }) {
+  const data = loadYamlFile(fileName);
+
+  if (!Array.isArray(data)) {
+    throw new InvalidConfigError(`Expecting an array from "${fileName}, but found ${typeof data} instead."`);
+  }
+
+  for (const item of data) {
+    const { name, key, id } = item;
+    const dbItem = { name, key, id, type: itemType };
+    database.items.push(dbItem);
+
+    const alias = aliases[key];
+    const aliasTokens = alias ? alias.split(",").map(s => s.trim().toLowerCase()) : [];
+
+    addItemToMap(dbItem, [
+      key.toLowerCase(),
+      id,
+      ...aliasTokens
+    ]);
+  }
+}
+
+function addItemToMap(item, keys) {
+  const map = database.map;
+
+  for (const key of keys) {
+    const existingItem = map[key];
+    if (existingItem) {
+      throw new InvalidConfigError(`Both "${existingItem.name}" and "${item.name}" has the same key "${key}".`);
+    }
+
+    map[key] = item;
+  }
+}
+
+for (const type of ItemTypes) {
+  loadItemFile({ fileName: type + "s.yml", itemType: type });
+}
+
+function getItem(key, type) {
+  const item = database.map[key.toLowerCase()];
+
+  if (!item || (type && item.type !== type)) {
+    throw new InvalidConfigError(`Unable to find ${type} "${key}"!`);
+  }
+
+  return item;
+}
+
+function verifySetup(setup) {
+  if (!setup) return;
+
+  for (const type of ItemTypes) {
+    const itemKey = setup[type];
+    if (!itemKey) continue;
+
+    if (!getItem(itemKey, type)) {
+      throw new InvalidConfigError(`Unknown ${type} "${itemKey}"!`);
+    }
+  }
+}
+
+function getApiType(type) {
+  if (ItemTypes.includes(type)) {
+    return type === "charm" ? "trinket" : type;
+  } else {
+    throw new TypeError(`Unsupported item type "${type}"!`);
+  }
+}
+
+export default {
+  getItem,
+  verifySetup,
+  ItemTypes,
+  getApiType
+};

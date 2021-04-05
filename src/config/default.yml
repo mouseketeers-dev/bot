@@ -1,0 +1,58 @@
+browser:
+  # window/headless/devtools
+  mode: window
+
+  window:
+  # browserPath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+
+  devtools:
+    port: 21222
+
+server:
+  port: 9000
+
+flow:
+  - PrepareCycle
+  - ClosePopups
+  - CheckMaintenance
+  - HourlyTrapCheck
+  - SoundHorn
+  - CheckKingReward
+  - UpdateEnvironment
+
+PrepareCycle:
+  cycleDelay: 15s
+
+CheckMaintenance:
+  maintenanceCycleDelay: 10m
+
+HourlyTrapCheck:
+  trapCheckMinutes: 30
+
+CheckKingReward:
+  maxRetry: 5
+
+UpdateEnvironment:
+
+FloatingIslands:
+  launchPadSetup:
+    weapon:
+    base:
+    charm:
+    bait:
+
+  wardenSetup:
+    weapon:
+    base:
+    charm:
+    bait:
+
+  paragonSetup:
+    charm:
+    base:
+
+  leaveLowIslandBeforeHunt: 36    # set to 0 to stay until trove
+  leaveHighIslandBeforeHunt: 30   # set to 0 to stay until trove
+
+ValourRift:
+  ...
