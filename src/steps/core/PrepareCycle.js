@@ -1,8 +1,5 @@
 import moment from "moment";
 import {sleep} from "../../utils/helpers";
-import puppeteer from "puppeteer";
-
-const { TimeoutError } = puppeteer;
 
 export default (config) => async function prepareCycle(ctx, next) {
   const { page, state, logger } = ctx;
@@ -13,23 +10,25 @@ export default (config) => async function prepareCycle(ctx, next) {
   try {
     state.lastJournalId = await page.latestJournalId();
     await next();
-    logger.close("[end]\n");
   } catch (ex) {
-    logger.log("Encountered error:");
+    logger.log("Encountered error:\n");
     console.error(ex);
 
-    if (ex instanceof TimeoutError) {
-      //TODO: add count for timeouterror
-      console.log("Page reloaded. Restart cycle in 1m.");
+    if (ex.message.includes("Timeout exceeded while waiting for event")) {
+      //TODO: add count for TimeoutError
+      logger.log("Reloading page due to timeout...");
       await page.reload();
-      state.cycleDelay = "1m";
+      state.cycleDelay = "10s";
     } else if (ex.message.includes("Execution context was destroyed")) {
       // this is likely due to the page just randomly restarting
+      logger.log("Reloading page due to navigation...");
       await page.reload();
     } else {
+      console.log("Unrecoverable error. Exiting...");
       process.exit(1);
     }
   }
 
+  logger.close("[end]\n");
   await sleep(state.cycleDelay);
 }

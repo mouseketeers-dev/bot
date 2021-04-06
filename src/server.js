@@ -3,6 +3,8 @@ import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 
 function start(port, mhPage) {
+  if (!port) return;
+
   const app = new Koa();
   const router = new Router();
   const page = mhPage.pptrPage;

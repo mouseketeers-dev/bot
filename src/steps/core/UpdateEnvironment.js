@@ -1,7 +1,6 @@
 import Step from "../step";
 import config from "../../config";
 import createDebug from "../../utils/debug";
-import objectPath from "object-path";
 
 const debug = createDebug("UpdateEnvironment");
 
@@ -10,7 +9,9 @@ export default class UpdateEnvironment extends Step {
   async initialize(modules) {
     if (!Array.isArray(modules)) modules = [];
 
-    debug("Enabled modules: " + modules.join(", "));
+    if (debug.enabled) {
+      debug("Enabled modules: " + (modules.length === 0 ? "none" : modules.join(", ")));
+    }
 
     const steps = [];
 

@@ -1,6 +1,6 @@
-import yaml from "js-yaml";
-import fs from "fs";
 import InvalidConfigError from "../errors/invalid-config-error";
+import {loadYaml} from "../utils/helpers";
+import {USER_SETTINGS_FOLDER_URL} from "../config";
 
 const database = {
   items: [],
@@ -9,23 +9,13 @@ const database = {
 
 const ItemTypes = ["weapon", "base", "charm", "bait"];
 
-const aliases = loadYamlFile("../../user/alias.yml");
-
-function loadYamlFile(fileName) {
-  try {
-    const file = fs.readFileSync(new URL(fileName, import.meta.url), "utf-8");
-    return yaml.load(file);
-  } catch (err) {
-    return {};
-  }
-
-}
+const aliases = loadYaml(new URL("alias.yml", USER_SETTINGS_FOLDER_URL));
 
 function loadItemFile({ fileName, itemType }) {
-  const data = loadYamlFile(fileName);
+  const data = loadYaml(new URL(fileName, import.meta.url));
 
   if (!Array.isArray(data)) {
-    throw new InvalidConfigError(`Expecting an array from "${fileName}, but found ${typeof data} instead."`);
+    throw new InvalidConfigError(`Expecting an array from "${fileName}", but found ${typeof data} instead."`);
   }
 
   for (const item of data) {

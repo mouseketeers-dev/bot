@@ -76,7 +76,7 @@ export default class CheckKingReward extends Step {
     await page.waitForSuccessfulResponse("puzzleimage.php");
   }
 
-  async submitCaptcha({ page }, captcha) {
+  async submitCaptcha({ page, logger }, captcha) {
     await page.$eval(
       "#mousehuntHud input.mousehuntPage-puzzle-form-code",
       (el, text) => el.value = text, captcha

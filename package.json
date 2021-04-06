@@ -1,6 +1,6 @@
 {
   "name": "mouseketeer-bot",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "",
   "scripts": {
     "bot": "node --experimental-specifier-resolution=node src/index.js"

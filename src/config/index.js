@@ -1,20 +1,33 @@
-import yaml from 'js-yaml';
 import util from 'util';
-import fs from 'fs';
 import deepAssign from 'object-assign-deep';
+import path from "path";
+import url from "url";
+import {loadYaml} from "../utils/helpers";
+import createDebug from "../utils/debug";
 
-function readFile(name) {
-  try {
-    return fs.readFileSync(new URL(name, import.meta.url));
-  } catch (err) {
-    return "";
+const debug = createDebug("config");
+
+export const USER_SETTINGS_FILE = process.env.USER_SETTINGS || "settings.yml";
+debug("User settings file: " + USER_SETTINGS_FILE);
+
+// if user_settings is a file, resolve it to "user" folder.
+// if it's an absolute path, use that path instead.
+export const USER_SETTINGS_FOLDER_URL = (() => {
+  const folder = path.dirname(USER_SETTINGS_FILE);
+  if (folder === ".") {
+    return new URL("../../user/", import.meta.url);
+  } else {
+    return url.pathToFileURL(folder);
   }
-}
+})();
+debug("User settings folder: " + USER_SETTINGS_FOLDER_URL);
 
 function load() {
   try {
-    const defaultConfig = yaml.load(readFile("default.yml"));
-    const userConfig = yaml.load(readFile("../../user/settings.yml"));
+    const defaultConfig = loadYaml(new URL("default.yml", import.meta.url));
+
+    const userConfigUrl = new URL(USER_SETTINGS_FILE, USER_SETTINGS_FOLDER_URL);
+    let userConfig = loadYaml(userConfigUrl, {});
 
     const mergedConfig = deepAssign({}, defaultConfig, userConfig);
 
@@ -30,5 +43,11 @@ const config = load();
 export default config;
 
 export function inspect() {
-  console.log(util.inspect(config, { showHidden: false, depth: null }));
+  return util.inspect(config, { showHidden: false, depth: null });
 }
+
+if (debug.enabled) {
+  debug(inspect());
+}
+
+//inspect();

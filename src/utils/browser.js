@@ -4,8 +4,10 @@ import {promises as fs} from 'fs';
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
 import {sleep} from "./helpers";
+import config, {USER_SETTINGS_FOLDER_URL} from "../config";
 
-const COOKIE_URL = new URL('../../user/cookies.json', import.meta.url);
+const COOKIES_FILE = config.browser.cookiesFile || "cookies.json";
+const COOKIES_URL = new URL(COOKIES_FILE, USER_SETTINGS_FOLDER_URL);
 const { MOUSEHUNT_USERNAME, MOUSEHUNT_PASSWORD } = process.env;
 
 export default {
@@ -122,13 +124,10 @@ async function verifyCamp(page, mode) {
 
   if (currentUrl.endsWith("camp.php")) {
     console.log("Camp loaded!\n");
-    return;
-  }
-
-  if (mode === "devtools") {
-    throw new BrowserError("Expecting 'camp.php' but found: " + currentUrl);
-  } else {
+  } else if (currentUrl.endsWith("login.php")) {
     await waitForLogin(page, mode);
+  } else {
+    throw new BrowserError("Expecting 'camp.php' but found: " + currentUrl);
   }
 }
 
@@ -150,14 +149,13 @@ async function waitForLogin(page, mode) {
     if (!resJson["success"]) {
       throw new BrowserError("Unable to login: " + resJson["login_error"]);
     }
-  } else {
+  } else if (mode !== "devtools") {
     console.log("Please log in! Waiting for camp…");
+  } else {
+    throw new BrowserError("Unable to login! Please provide cookies or username and password.");
   }
 
-  if (mode === "window") {
-    await page.waitForFunction(() => document.body.classList.contains('PageCamp'), { timeout: 0 });
-  }
-
+  await page.waitForFunction(() => document.body.classList.contains('PageCamp'), { timeout: 0 });
   await saveCookies(page);
 
   console.log("Camp loaded!\n");
@@ -166,10 +164,10 @@ async function waitForLogin(page, mode) {
 
 async function setCookies(page) {
   try {
-    const cookiesString = (await fs.readFile(COOKIE_URL)).toString();
+    const cookiesString = (await fs.readFile(COOKIES_URL)).toString();
     const cookies = JSON.parse(cookiesString);
     await page.setCookie(...cookies);
-    console.log("Cookies loaded from 'user/cookies.json'.");
+    console.log(`Cookies loaded from 'user/${COOKIES_FILE}'.`);
   } catch (err) {
     console.log("No cookies are loaded.");
   }
@@ -177,8 +175,8 @@ async function setCookies(page) {
 
 async function saveCookies(page) {
   const cookies = await page.cookies();
-  await fs.writeFile(COOKIE_URL, JSON.stringify(cookies, null, 2));
-  console.log("Cookies saved to 'user/cookies.json'.");
+  await fs.writeFile(COOKIES_URL, JSON.stringify(cookies, null, 2));
+  console.log(`Cookies saved to 'user/${COOKIES_FILE}'.`);
 }
 
 //endregion

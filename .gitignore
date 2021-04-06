@@ -8,4 +8,4 @@ node_modules/
 build/
 
 user/*.yml
-user/cookies.json
+user/*.json

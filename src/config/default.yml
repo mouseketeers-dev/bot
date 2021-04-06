@@ -2,6 +2,8 @@ browser:
   # window/headless/devtools
   mode: window
 
+  # cookiesFile: cookies.yml
+
   window:
   # browserPath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
 
@@ -9,7 +11,7 @@ browser:
     port: 21222
 
 server:
-  port: 9000
+# port: 9000
 
 flow:
   - PrepareCycle
