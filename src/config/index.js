@@ -17,7 +17,7 @@ export const USER_SETTINGS_FOLDER_URL = (() => {
   if (folder === ".") {
     return new URL("../../user/", import.meta.url);
   } else {
-    return url.pathToFileURL(folder);
+    return url.pathToFileURL(folder + "/");
   }
 })();
 debug("User settings folder: " + USER_SETTINGS_FOLDER_URL);

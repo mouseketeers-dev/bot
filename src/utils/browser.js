@@ -5,10 +5,16 @@ import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
 import {sleep} from "./helpers";
 import config, {USER_SETTINGS_FOLDER_URL} from "../config";
+import createDebug from "./debug";
+
+const debug = createDebug("browser");
 
 const COOKIES_FILE = config.browser.cookiesFile || "cookies.json";
 const COOKIES_URL = new URL(COOKIES_FILE, USER_SETTINGS_FOLDER_URL);
 const { MOUSEHUNT_USERNAME, MOUSEHUNT_PASSWORD } = process.env;
+
+debug("Cookies file: " + COOKIES_FILE);
+debug("Cookies url: " + COOKIES_URL.pathname);
 
 export default {
   initializePage
@@ -167,7 +173,7 @@ async function setCookies(page) {
     const cookiesString = (await fs.readFile(COOKIES_URL)).toString();
     const cookies = JSON.parse(cookiesString);
     await page.setCookie(...cookies);
-    console.log(`Cookies loaded from 'user/${COOKIES_FILE}'.`);
+    console.log(`Cookies loaded from '${COOKIES_FILE}'.`);
   } catch (err) {
     console.log("No cookies are loaded.");
   }
@@ -176,7 +182,7 @@ async function setCookies(page) {
 async function saveCookies(page) {
   const cookies = await page.cookies();
   await fs.writeFile(COOKIES_URL, JSON.stringify(cookies, null, 2));
-  console.log(`Cookies saved to 'user/${COOKIES_FILE}'.`);
+  console.log(`Cookies saved to '${COOKIES_FILE}'.`);
 }
 
 //endregion
