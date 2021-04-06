@@ -7,7 +7,7 @@ const debug = createDebug("flow");
 /**
  *
  * @param stepNames
- * @param stepConfigs
+ * @param configs
  * @returns {Promise<function()>}
  */
 async function createFlow(stepNames, configs) {

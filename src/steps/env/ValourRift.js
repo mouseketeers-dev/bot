@@ -13,7 +13,7 @@ export default class ValourRift extends Step {
     return user["environment_type"] === "rift_valour";
   }
 
-  async run(ctx, next) {
+  async run(ctx) {
     const { logger, user } = ctx;
 
     if (!this.isInsideTower(user)) return;

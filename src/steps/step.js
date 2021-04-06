@@ -26,18 +26,22 @@ export default class Step {
       const { logger } = ctx;
       logger.open(`[${this.name}]`);
 
-      // if (!await page.url().endsWith("camp.php")) {
-      //   console.log("Waiting for camp…");
-      //   await page.waitForResponse(r => r.url().endsWith("page.php") && r.status() === 200);
-      // }
+      if (next) {
+        const closeBlockThenNext = () => {
+          logger.close();
+          return next();
+        };
 
-      const closeBlockThenNext = () => {
+        if (!await this.shouldRun(ctx)) return closeBlockThenNext();
+        await this.run(ctx, closeBlockThenNext);
+
+      } else {
+        if (await this.shouldRun(ctx)) {
+          await this.run(ctx);
+        }
+
         logger.close();
-        if (next) return next();
-      };
-
-      if (!await this.shouldRun(ctx)) return closeBlockThenNext();
-      await this.run(ctx, closeBlockThenNext);
+      }
     };
   }
 
