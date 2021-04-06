@@ -12,7 +12,10 @@ import MouseHuntPage from "./utils/mousehunt-page";
 async function main() {
   const page = await browser.initializePage(config["browser"]);
   const mhPage = MouseHuntPage.wrap(page);
-  server.start(config.server?.port, mhPage);
+
+  if (config.server?.port) {
+    server.start(config.server.port, mhPage);
+  }
 
   await startFlow(mhPage);
 }

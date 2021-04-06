@@ -61,6 +61,9 @@ async function initializePage(browserConfig) {
 
   await verifyCamp(page, mode);
 
+  const user = await page.evaluate("user");
+  console.log(`\nCamp loaded! User: ${user.username}, location: ${user.environment_name}.\n`);
+
   return page;
 }
 
@@ -129,7 +132,7 @@ async function verifyCamp(page, mode) {
   const currentUrl = await page.url();
 
   if (currentUrl.endsWith("camp.php")) {
-    console.log("Camp loaded!\n");
+
   } else if (currentUrl.endsWith("login.php")) {
     await waitForLogin(page, mode);
   } else {
@@ -163,8 +166,6 @@ async function waitForLogin(page, mode) {
 
   await page.waitForFunction(() => document.body.classList.contains('PageCamp'), { timeout: 0 });
   await saveCookies(page);
-
-  console.log("Camp loaded!\n");
 }
 
 
@@ -173,7 +174,7 @@ async function setCookies(page) {
     const cookiesString = (await fs.readFile(COOKIES_URL)).toString();
     const cookies = JSON.parse(cookiesString);
     await page.setCookie(...cookies);
-    console.log(`Cookies loaded from '${COOKIES_FILE}'.`);
+    console.log(`Cookies loaded from "${COOKIES_FILE}".`);
   } catch (err) {
     console.log("No cookies are loaded.");
   }
@@ -182,7 +183,7 @@ async function setCookies(page) {
 async function saveCookies(page) {
   const cookies = await page.cookies();
   await fs.writeFile(COOKIES_URL, JSON.stringify(cookies, null, 2));
-  console.log(`Cookies saved to '${COOKIES_FILE}'.`);
+  console.log(`Cookies saved to "${COOKIES_FILE}".`);
 }
 
 //endregion

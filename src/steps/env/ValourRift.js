@@ -16,8 +16,10 @@ export default class ValourRift extends Step {
   async run(ctx, next) {
     const { logger, user } = ctx;
 
+    if (!this.isInsideTower(user)) return;
+
     const currentFloor = this.getCurrentFloor(user);
-    if (this.currentFloor === currentFloor) return next(); // nothing to update
+    if (this.currentFloor === currentFloor) return; // nothing to update
     this.currentFloor = currentFloor;
 
     logger.log("Current floor: " + currentFloor);
@@ -28,11 +30,13 @@ export default class ValourRift extends Step {
     } else {
       await this.toggleChampionFire(ctx, false);
     }
-
-    return next();
   }
 
   //region User Info Getters
+
+  isInsideTower(user) {
+    return op.get(user, "enviroment_atts.state") === "tower";
+  }
 
   isAtEclipse(user) {
     return op.get(user, "enviroment_atts.is_at_eclipse");

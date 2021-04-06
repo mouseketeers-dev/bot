@@ -27,7 +27,7 @@ function load() {
     const defaultConfig = loadYaml(new URL("default.yml", import.meta.url));
 
     const userConfigUrl = new URL(USER_SETTINGS_FILE, USER_SETTINGS_FOLDER_URL);
-    let userConfig = loadYaml(userConfigUrl, {});
+    let userConfig = loadYaml(userConfigUrl);
 
     const mergedConfig = deepAssign({}, defaultConfig, userConfig);
 
@@ -35,6 +35,7 @@ function load() {
   } catch (e) {
     console.error("Unable to read config!");
     console.error(e);
+    process.exit(1);
   }
 }
 
