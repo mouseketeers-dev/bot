@@ -15,20 +15,22 @@
 # 7. To stop, run `pm2 stop all` or `pm2 stop <instance-name>`
 
 apps:
-  - name: mh-user1
+  - name: user1
     script: src/index.js
     node_args: --experimental-specifier-resolution=node
     autorestart: false
     env:
+      BASE_SETTINGS: settings.yml
       USER_SETTINGS: settings_user1.yml
       # MOUSEHUNT_USERNAME: <username>
       # MOUSEHUNT_PASSWORD: <password>
 
-  - name: mh-user2
+  - name: user2
     script: src/index.js
     node_args: --experimental-specifier-resolution=node
     autorestart: false
     env:
+      BASE_SETTINGS: settings.yml
       USER_SETTINGS: settings_user2.yml
       # MOUSEHUNT_USERNAME: <username>
       # MOUSEHUNT_PASSWORD: <password>

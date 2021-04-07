@@ -4,13 +4,13 @@ import {promises as fs} from 'fs';
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
 import {BLANK_LINE, sleep} from "./helpers";
-import config, {USER_SETTINGS_FILE_NO_EXT, USER_SETTINGS_FOLDER_URL} from "../config";
+import config, {USER_SETTINGS_FILE_NO_EXT, BASE_SETTINGS_FOLDER_URL} from "../config";
 import createDebug from "./debug";
 
 const debug = createDebug("browser");
 
 const COOKIES_FILE = config.browser.cookiesFile || "cookies.json";
-const COOKIES_URL = new URL(COOKIES_FILE, USER_SETTINGS_FOLDER_URL);
+const COOKIES_URL = new URL(COOKIES_FILE, BASE_SETTINGS_FOLDER_URL);
 const { MOUSEHUNT_USERNAME, MOUSEHUNT_PASSWORD } = process.env;
 
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4427.0 Safari/537.36";

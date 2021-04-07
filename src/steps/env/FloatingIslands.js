@@ -10,7 +10,6 @@ export default class FloatingIslands extends Step {
     db.verifySetup(config["paragonSetup"]);
 
     this.config = config;
-    this.currentStatus = null;
   }
 
   shouldRun({ user }) {
@@ -35,8 +34,7 @@ export default class FloatingIslands extends Step {
     const { page, user, logger } = ctx;
 
     const enemyStatus = op.get(user, "enviroment_atts.enemy_state");
-    if (this.currentStatus === enemyStatus) return; // Nothing to update
-    this.currentStatus = enemyStatus;
+    if (!this.hasCacheChanged("enemyStatus", enemyStatus)) return;
 
     const enemyName = op.get(user, "enviroment_atts.hunting_site_atts.enemy.name");
     const isHighAltitude = this.isHighAltitude(user);
@@ -74,8 +72,7 @@ export default class FloatingIslands extends Step {
   }
 
   async updateForLaunchPad(ctx) {
-    if (this.currentStatus === "launchpad") return; // Nothing to update
-    this.currentStatus = "launchpad";
+
   }
 
   //endregion

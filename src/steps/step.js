@@ -3,6 +3,25 @@ import StepLoadError from "../errors/step-load-error";
 
 export default class Step {
 
+  constructor() {
+    this.cache = {};
+  }
+
+  getCache(key) {
+    return this.cache[key];
+  }
+
+  hasCacheChanged(key, newValue) {
+    const cachedValue = this.cache[key];
+
+    if (cachedValue !== newValue) {
+      this.cache[key] = newValue;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   get name() {
     return this.constructor.name;
   }

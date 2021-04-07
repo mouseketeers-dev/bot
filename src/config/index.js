@@ -7,30 +7,37 @@ import createDebug from "../utils/debug";
 
 const debug = createDebug("config");
 
-export const USER_SETTINGS_FILE = process.env.USER_SETTINGS?.trim() || "settings.yml";
-export const USER_SETTINGS_FILE_NO_EXT = path.parse(USER_SETTINGS_FILE).name;
-debug("User settings file: " + USER_SETTINGS_FILE);
+const BASE_SETTINGS_FILE = process.env.BASE_SETTINGS?.trim() || "settings.yml";
+debug("Base settings file: " + BASE_SETTINGS_FILE);
 
 // if user_settings is a file, resolve it to "user" folder.
 // if it's an absolute path, use that path instead.
-export const USER_SETTINGS_FOLDER_URL = (() => {
-  const folder = path.dirname(USER_SETTINGS_FILE);
+export const BASE_SETTINGS_FOLDER_URL = (() => {
+  const folder = path.dirname(BASE_SETTINGS_FILE);
   if (folder === ".") {
     return new URL("../../user/", import.meta.url);
   } else {
     return url.pathToFileURL(folder + "/");
   }
 })();
-debug("User settings folder: " + USER_SETTINGS_FOLDER_URL);
+debug("Settings folder: " + BASE_SETTINGS_FOLDER_URL);
+
+export const USER_SETTINGS_FILE = process.env.USER_SETTINGS?.trim() || "";
+export const USER_SETTINGS_FILE_NO_EXT = path.parse(USER_SETTINGS_FILE).name;
+
+debug("User settings file: " + USER_SETTINGS_FILE);
 
 function load() {
   try {
     const defaultConfig = loadYamlSync(new URL("default.yml", import.meta.url));
 
-    const userConfigUrl = new URL(USER_SETTINGS_FILE, USER_SETTINGS_FOLDER_URL);
-    let userConfig = loadYamlSync(userConfigUrl);
+    const baseConfigUrl = new URL(BASE_SETTINGS_FILE, BASE_SETTINGS_FOLDER_URL);
+    let baseConfig = loadYamlSync(baseConfigUrl);
 
-    const mergedConfig = deepAssign({}, defaultConfig, userConfig);
+    const userConfigUrl = new URL(USER_SETTINGS_FILE, BASE_SETTINGS_FOLDER_URL);
+    let userConfig = loadYamlSync(userConfigUrl, {});
+
+    const mergedConfig = deepAssign({}, defaultConfig, baseConfig, userConfig);
 
     return Object.freeze(mergedConfig);
   } catch (e) {

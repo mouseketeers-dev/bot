@@ -37,6 +37,8 @@ CheckKingReward:
   maxRetry: 5
 
 UpdateEnvironment:
+  modules:
+  showLatestHunt: true
 
 FloatingIslands:
   launchPadSetup:
@@ -59,4 +61,6 @@ FloatingIslands:
   leaveHighIslandBeforeHunt: 30   # set to 0 to stay until trove
 
 ValourRift:
-  ...
+  farmingSetup:
+    bait: brie_string_cheese
+    charm: RVC

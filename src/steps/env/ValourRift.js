@@ -5,8 +5,9 @@ import db from "../../data";
 export default class ValourRift extends Step {
 
   initialize(config) {
+    db.verifySetup(config["farmingSetup"]);
+
     this.config = config;
-    this.currentFloor = null;
   }
 
   shouldRun({ user }) {
@@ -14,13 +15,35 @@ export default class ValourRift extends Step {
   }
 
   async run(ctx) {
+    const { user } = ctx;
+    const currentState = op.get(user, "enviroment_atts.state");
+
+    if (currentState === "farming") {
+      // no need to update if we're still farming
+      if (!this.hasCacheChanged("currentState", currentState)) return;
+      await this.updateForOutside(ctx);
+    } else if (currentState === "tower") {
+      await this.updateForTower(ctx);
+    }
+  }
+
+
+  async updateForOutside({ page, logger }) {
+    const farmingSetup = this.config["farmingSetup"];
+
+    if (farmingSetup) {
+      await page.armItems(farmingSetup);
+      logger.log("Changed to farming setup.");
+    }
+  }
+
+  async updateForTower(ctx) {
     const { logger, user } = ctx;
 
-    if (!this.isInsideTower(user)) return;
+    const currentFloor = op.get(user, "enviroment_atts.floor");
 
-    const currentFloor = this.getCurrentFloor(user);
-    if (this.currentFloor === currentFloor) return; // nothing to update
-    this.currentFloor = currentFloor;
+    // no need to update if we're on the same floor
+    if (!this.hasCacheChanged("currentFloor", currentFloor)) return;
 
     logger.log("Current floor: " + currentFloor);
 
@@ -40,10 +63,6 @@ export default class ValourRift extends Step {
 
   isAtEclipse(user) {
     return op.get(user, "enviroment_atts.is_at_eclipse");
-  }
-
-  getCurrentFloor(user) {
-    return op.get(user, "enviroment_atts.floor");
   }
 
   //endregion

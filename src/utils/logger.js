@@ -75,7 +75,7 @@ class LogBlock {
 
     if (important || this.important) {
       let block = this;
-      let cachedLogsFromRoot = [this._format(data, this.level)];
+      let cachedLogsFromRoot = [...this._format(data, this.level)];
 
       // Traverse up to root 
       while (block && !block.important) {
@@ -96,6 +96,10 @@ class LogBlock {
   _format(data, level) {
     if (!data) return "";
 
+    if (typeof data === "string" && data.includes("\n")) {
+      data = data.split("\n");
+    }
+
     function formatSingleLog(log) {
       log = log.toString();
       const effectiveLevel = Math.max(0, log.startsWith("[") ? level - 1 : level);
@@ -105,7 +109,7 @@ class LogBlock {
     if (Array.isArray(data)) {
       return data.map(formatSingleLog);
     } else {
-      return formatSingleLog(data);
+      return [formatSingleLog(data)];
     }
   }
 
