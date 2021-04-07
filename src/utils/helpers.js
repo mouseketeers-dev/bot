@@ -32,16 +32,7 @@ export function sleep(timespan) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function isFileAccessible(fileUrl) {
-  try {
-    fs.accessSync(fileUrl);
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
-export function loadYaml(fileUrl, defaultValue) {
+export function loadYamlSync(fileUrl, defaultValue) {
   try {
     return yaml.load(fs.readFileSync(fileUrl));
   } catch (err) {

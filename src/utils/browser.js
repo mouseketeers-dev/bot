@@ -4,7 +4,7 @@ import {promises as fs} from 'fs';
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
 import {sleep} from "./helpers";
-import config, {USER_SETTINGS_FOLDER_URL} from "../config";
+import config, {USER_SETTINGS_FILE, USER_SETTINGS_FOLDER_URL} from "../config";
 import createDebug from "./debug";
 
 const debug = createDebug("browser");
@@ -12,6 +12,14 @@ const debug = createDebug("browser");
 const COOKIES_FILE = config.browser.cookiesFile || "cookies.json";
 const COOKIES_URL = new URL(COOKIES_FILE, USER_SETTINGS_FOLDER_URL);
 const { MOUSEHUNT_USERNAME, MOUSEHUNT_PASSWORD } = process.env;
+
+const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4427.0 Safari/537.36";
+
+const Modes = {
+  Window: "window",
+  Headless: "headless",
+  DevTools: "devtools"
+};
 
 debug("Cookies file: " + COOKIES_FILE);
 debug("Cookies url: " + COOKIES_URL.pathname);
@@ -26,15 +34,15 @@ async function initializePage(browserConfig) {
   let browser;
 
   switch (mode) {
-    case "window":
+    case Modes.Window:
       browser = await openWindowBrowser(config);
       break;
 
-    case "headless":
+    case Modes.Headless:
       browser = await openHeadlessBrowser(config);
       break;
 
-    case "devtools":
+    case Modes.DevTools:
       browser = await openDevToolsBrowser(config);
       break;
 
@@ -44,14 +52,19 @@ async function initializePage(browserConfig) {
 
   browser.on("disconnected", () => {
     console.log("Browser is closed! Stopping bot…");
-    process.exit(1);
+    process.exit(0);
   });
 
   const currentPages = await browser.pages();
   const page = currentPages.length > 0 ? currentPages[0] : await browser.newPage();
   const currentUrl = await page.url();
 
-  if (mode !== "devtools") await setCookies(page);
+  if (mode !== Modes.DevTools) await setCookies(page);
+  if (mode === Modes.Headless) await page.setUserAgent(USER_AGENT);
+
+  if (mode !== Modes.Headless && browserConfig["prefixTitleWithFirstName"]) {
+    await prefixTitleWithFirstName(page);
+  }
 
   if (!currentUrl.includes("www.mousehuntgame.com")) {
     await page.goto('https://www.mousehuntgame.com', {
@@ -124,6 +137,31 @@ async function openDevToolsBrowser(devToolsConfig) {
   return browser;
 }
 
+function prefixTitleWithFirstName(page) {
+  return page.evaluateOnNewDocument((userSettingsName) => {
+    let prefixed = false;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const target = document.querySelector('title');
+      if (prefixed || !target) return;
+
+      const observer = new MutationObserver(prefixTitle);
+
+      function prefixTitle() {
+        if (!document.title.startsWith("[")) {
+          observer.disconnect();
+          const name = window.user ? window.user.firstname : userSettingsName;
+          document.title = `[${name}] ${document.title}`;
+          observer.observe(target, { childList: true });
+        }
+      }
+
+      setTimeout(prefixTitle, 1000);
+      prefixed = true;
+    });
+  }, USER_SETTINGS_FILE);
+}
+
 //endregion
 
 //region Setup & Login
@@ -158,25 +196,38 @@ async function waitForLogin(page, mode) {
     if (!resJson["success"]) {
       throw new BrowserError("Unable to login: " + resJson["login_error"]);
     }
-  } else if (mode !== "devtools") {
-    console.log("Please log in! Waiting for camp…");
-  } else {
+  } else if (mode === Modes.Headless) { // we can't wait for manual login in headless mode
     throw new BrowserError("Unable to login! Please provide cookies or username and password.");
+  } else {
+    console.log("Please log in! Waiting for camp…");
   }
 
   await page.waitForFunction(() => document.body.classList.contains('PageCamp'), { timeout: 0 });
   await saveCookies(page);
 }
 
+async function isFileAccessible(fileUrl) {
+  try {
+    await fs.access(fileUrl);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
 
 async function setCookies(page) {
-  try {
-    const cookiesString = (await fs.readFile(COOKIES_URL)).toString();
-    const cookies = JSON.parse(cookiesString);
-    await page.setCookie(...cookies);
-    console.log(`Cookies loaded from "${COOKIES_FILE}".`);
-  } catch (err) {
-    console.log("No cookies are loaded.");
+  if (await isFileAccessible(COOKIES_URL)) {
+    try {
+      const cookiesString = (await fs.readFile(COOKIES_URL)).toString();
+      const cookies = JSON.parse(cookiesString);
+      await page.setCookie(...cookies);
+      console.log(`Cookies loaded from "${COOKIES_FILE}".`);
+    } catch (err) {
+      console.error("Unable to read cookies!");
+      console.error(err);
+    }
+  } else {
+    console.log("No cookies file found.");
   }
 }
 

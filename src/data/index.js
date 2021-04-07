@@ -1,5 +1,5 @@
 import InvalidConfigError from "../errors/invalid-config-error";
-import {loadYaml} from "../utils/helpers";
+import {loadYamlSync} from "../utils/helpers";
 import {USER_SETTINGS_FOLDER_URL} from "../config";
 import createDebug from "../utils/debug";
 
@@ -13,12 +13,12 @@ const database = {
 const ItemTypes = ["weapon", "base", "charm", "bait"];
 
 const ALIAS_URL = new URL("alias.yml", USER_SETTINGS_FOLDER_URL);
-const aliases = loadYaml(ALIAS_URL, {});
+const aliases = loadYamlSync(ALIAS_URL, {});
 
 debug("Alias file url: " + ALIAS_URL);
 
 function loadItemFile({ fileName, itemType }) {
-  const data = loadYaml(new URL(fileName, import.meta.url));
+  const data = loadYamlSync(new URL(fileName, import.meta.url));
 
   if (!Array.isArray(data)) {
     throw new InvalidConfigError(`Expecting an array from "${fileName}", but found ${typeof data} instead."`);

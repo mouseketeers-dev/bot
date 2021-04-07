@@ -1,0 +1,34 @@
+# PM2 configuration file for easy multi-instance setup.
+
+# 1. Prerequisites: install `npm install --global pm2`.
+# 2. Inside `bot` folder, clone this file to `bot_pm2.yml`.
+# 3. Duplicate "app" block for each MouseHunt user, and update its "name" and "USER_SETTINGS" field.
+#    The "settings_<user>.yml" files should be in `bot/user`.
+
+# 4. For new users (no cookies file generated yet), you can opt to supply the username/password in the config below.
+# 5. First time run: `pm2 start bot_pm2.yml`. This command will load the users in this config to pm2.
+#    Subsequent runs: `pm2 start all`
+
+# 6. To print logs: `pm2 logs` or `pm2 logs <instance-name>`. 
+#    To show more lines, use `pm2 logs [<instance-name>] --lines=50`
+#    To quit showing logs, press `Ctrl-C` or `Cmd-C`.
+# 7. To stop, run `pm2 stop all` or `pm2 stop <instance-name>`
+
+apps:
+  - name: mh-user1
+    script: src/index.js
+    node_args: --experimental-specifier-resolution=node
+    autorestart: false
+    env:
+      USER_SETTINGS: settings_user1.yml
+      # MOUSEHUNT_USERNAME: <username>
+      # MOUSEHUNT_PASSWORD: <password>
+
+  - name: mh-user2
+    script: src/index.js
+    node_args: --experimental-specifier-resolution=node
+    autorestart: false
+    env:
+      USER_SETTINGS: settings_user2.yml
+      # MOUSEHUNT_USERNAME: <username>
+      # MOUSEHUNT_PASSWORD: <password>

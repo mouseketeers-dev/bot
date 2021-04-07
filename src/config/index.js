@@ -2,7 +2,7 @@ import util from 'util';
 import deepAssign from 'object-assign-deep';
 import path from "path";
 import url from "url";
-import {loadYaml} from "../utils/helpers";
+import {loadYamlSync} from "../utils/helpers";
 import createDebug from "../utils/debug";
 
 const debug = createDebug("config");
@@ -24,10 +24,10 @@ debug("User settings folder: " + USER_SETTINGS_FOLDER_URL);
 
 function load() {
   try {
-    const defaultConfig = loadYaml(new URL("default.yml", import.meta.url));
+    const defaultConfig = loadYamlSync(new URL("default.yml", import.meta.url));
 
     const userConfigUrl = new URL(USER_SETTINGS_FILE, USER_SETTINGS_FOLDER_URL);
-    let userConfig = loadYaml(userConfigUrl);
+    let userConfig = loadYamlSync(userConfigUrl);
 
     const mergedConfig = deepAssign({}, defaultConfig, userConfig);
 

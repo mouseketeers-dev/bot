@@ -10,6 +10,8 @@ browser:
   devtools:
     port: 21222
 
+  prefixTitleWithFirstName: true
+
 server:
 # port: 9000
 

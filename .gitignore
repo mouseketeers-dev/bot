@@ -9,3 +9,4 @@ build/
 
 user/*.yml
 user/*.json
+bot_pm2.yml
