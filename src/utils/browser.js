@@ -3,7 +3,7 @@ import puppeteer from "puppeteer";
 import {promises as fs} from 'fs';
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
-import {LOG_BLANK_LINE, sleep} from "./helpers";
+import {BLANK_LINE, sleep} from "./helpers";
 import config, {USER_SETTINGS_FILE_NO_EXT, USER_SETTINGS_FOLDER_URL} from "../config";
 import createDebug from "./debug";
 
@@ -74,7 +74,9 @@ async function initializePage(browserConfig) {
 
   const user = await page.evaluate("window.user");
   if (user) {
-    console.log(LOG_BLANK_LINE + `Camp loaded! User: ${user.username}, location: ${user.environment_name}.` + LOG_BLANK_LINE);
+    console.log(BLANK_LINE);
+    console.log(`Camp loaded! User: ${user.username}, location: ${user.environment_name}.`);
+    console.log(BLANK_LINE);
   }
 
   return page;

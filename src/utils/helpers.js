@@ -5,10 +5,9 @@ export default {
   sleep
 };
 
-// Adding "." so PM2 won't remove blank lines from streaming logs
+// Adding "blank character" so PM2 won't remove blank lines from streaming logs
 // @see https://github.com/Unitech/pm2/issues/3237
-export const LOG_BLANK_LINE = process.env.PM2_HOME ? "\n\n" : "\n";
-
+export const BLANK_LINE = process.env.PM2_HOME ? "\u2800" : "";
 
 export function parseTimespan(input) {
   const pattern = /([\d.]+)([dhms])/g;
