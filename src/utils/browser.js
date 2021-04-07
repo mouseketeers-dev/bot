@@ -74,8 +74,8 @@ async function initializePage(browserConfig) {
 
   await verifyCamp(page, mode);
 
-  const user = await page.evaluate("user");
-  console.log(`\nCamp loaded! User: ${user.username}, location: ${user.environment_name}.\n`);
+  const user = await page.evaluate("window.user");
+  console.log(`\nCamp loaded! User: ${user?.username}, location: ${user?.environment_name}.\n`);
 
   return page;
 }

@@ -153,11 +153,11 @@ export default class MouseHuntPage {
   //region MouseHunt related
 
   user() {
-    return this.page.evaluate("user");
+    return this.page.evaluate("window.user");
   }
 
   async latestJournalId() {
-    return this.page.evaluate("lastReadJournalEntryId");
+    return this.page.evaluate("window.lastReadJournalEntryId");
   }
 
   hasNewJournal(state) {

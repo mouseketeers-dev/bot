@@ -12,7 +12,12 @@ export default class ClosePopups extends Step {
       logger.log("Closing daily reward…");
       await sleep("1s");
       await page.evaluate(() => {
-        document.querySelector("#overlayPopup")?.replaceChildren(); // clear popup contents
+        const target = document.querySelector("#overlayPopup");
+        if (target) {
+          target.replaceChildren(); // clear popup contents
+          target.classList.remove("dailyRewardPopup");
+        }
+
         hg.views.MessengerView.go(); // clear overlay
       });
     }
