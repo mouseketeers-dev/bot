@@ -1,6 +1,7 @@
 import Koa from "koa";
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
+import {LOG_BLANK_LINE} from "./utils/helpers";
 
 function start(port, mhPage) {
   const app = new Koa();
@@ -36,7 +37,7 @@ function start(port, mhPage) {
     .use(router.allowedMethods());
 
   app.listen(port);
-  console.log("Server is running at :" + port + ".\n");
+  console.log("Server is running at :" + port + "." + LOG_BLANK_LINE);
 }
 
 export default {

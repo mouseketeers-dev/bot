@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import config, {USER_SETTINGS_FILE} from './config';
+import config, {USER_SETTINGS_FILE, USER_SETTINGS_FILE_NO_EXT} from './config';
 import browser from './utils/browser';
 import flow from "./steps/flow";
 import server from "./server";
@@ -8,6 +8,8 @@ import server from "./server";
 import State from "./utils/state";
 import Logger from "./utils/logger";
 import MouseHuntPage from "./utils/mousehunt-page";
+
+import SegfaultHandler from 'segfault-handler';
 
 async function main() {
   const page = await browser.initializePage(config["browser"]);
@@ -40,8 +42,9 @@ async function startFlow(page) {
 }
 
 showBanner();
-
 console.log(`Config loaded from: "${USER_SETTINGS_FILE}".`);
+
+SegfaultHandler.registerHandler(`${USER_SETTINGS_FILE_NO_EXT}-crash.log`);
 
 main()
   .then(() => console.log("Done!"))

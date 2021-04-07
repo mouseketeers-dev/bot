@@ -1,5 +1,5 @@
 import moment from "moment";
-import {sleep} from "../../utils/helpers";
+import {LOG_BLANK_LINE, sleep} from "../../utils/helpers";
 
 export default (config) => async function prepareCycle(ctx, next) {
   const { page, state, logger } = ctx;
@@ -11,7 +11,7 @@ export default (config) => async function prepareCycle(ctx, next) {
     state.lastJournalId = await page.latestJournalId();
     await next();
   } catch (ex) {
-    logger.log("Encountered error:\n");
+    logger.log("Encountered error:" + LOG_BLANK_LINE);
     console.error(ex);
 
     if (ex.message.includes("Timeout exceeded while waiting for event")) {
@@ -29,6 +29,6 @@ export default (config) => async function prepareCycle(ctx, next) {
     }
   }
 
-  logger.close("[end]\n");
+  logger.close("[end]" + LOG_BLANK_LINE);
   await sleep(state.cycleDelay);
 }

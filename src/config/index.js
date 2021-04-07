@@ -8,6 +8,7 @@ import createDebug from "../utils/debug";
 const debug = createDebug("config");
 
 export const USER_SETTINGS_FILE = process.env.USER_SETTINGS?.trim() || "settings.yml";
+export const USER_SETTINGS_FILE_NO_EXT = path.parse(USER_SETTINGS_FILE).name;
 debug("User settings file: " + USER_SETTINGS_FILE);
 
 // if user_settings is a file, resolve it to "user" folder.

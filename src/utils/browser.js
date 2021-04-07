@@ -3,8 +3,8 @@ import puppeteer from "puppeteer";
 import {promises as fs} from 'fs';
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
-import {sleep} from "./helpers";
-import config, {USER_SETTINGS_FILE, USER_SETTINGS_FOLDER_URL} from "../config";
+import {LOG_BLANK_LINE, sleep} from "./helpers";
+import config, {USER_SETTINGS_FILE_NO_EXT, USER_SETTINGS_FOLDER_URL} from "../config";
 import createDebug from "./debug";
 
 const debug = createDebug("browser");
@@ -67,20 +67,42 @@ async function initializePage(browserConfig) {
   }
 
   if (!currentUrl.includes("www.mousehuntgame.com")) {
-    await page.goto('https://www.mousehuntgame.com', {
-      waitUntil: 'networkidle0'
-    });
+    await tryLoadingPage(page);
   }
 
   await verifyCamp(page, mode);
 
   const user = await page.evaluate("window.user");
-  console.log(`\nCamp loaded! User: ${user?.username}, location: ${user?.environment_name}.\n`);
+  if (user) {
+    console.log(LOG_BLANK_LINE + `Camp loaded! User: ${user.username}, location: ${user.environment_name}.` + LOG_BLANK_LINE);
+  }
 
   return page;
 }
 
 //region Browsers
+
+async function tryLoadingPage(page, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await page.goto('https://www.mousehuntgame.com', {
+        waitUntil: 'networkidle0'
+      });
+
+      return;
+    } catch (err) {
+      if (err.message.includes("Navigation timeout")) {
+        console.log("Timeout! Retrying to load page…");
+        // this is ok, continue until retries exhausted.
+      } else {
+        throw err;
+      }
+    }
+
+    console.error("Unable to load page!");
+  }
+
+}
 
 //TODO: use proxy-chain to block ads: https://github.com/apify/proxy-chain#anonymizeproxyproxyurl-callback
 function openWindowBrowser(windowConfig) {
@@ -159,7 +181,7 @@ function prefixTitleWithFirstName(page) {
       setTimeout(prefixTitle, 1000);
       prefixed = true;
     });
-  }, USER_SETTINGS_FILE);
+  }, USER_SETTINGS_FILE_NO_EXT);
 }
 
 //endregion
