@@ -78,6 +78,8 @@ function verifySetup(setup) {
       throw new InvalidConfigError(`Unknown ${type} "${itemKey}"!`);
     }
   }
+
+  return setup;
 }
 
 function getApiType(type) {

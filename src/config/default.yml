@@ -55,8 +55,9 @@ FloatingIslands:
     bait:
 
   paragonSetup:
-    charm:
     base:
+    charm:
+    bait:
 
   leaveLowIslandBeforeHunt: 36    # set to 0 to stay until trove
   leaveHighIslandBeforeHunt: 30   # set to 0 to stay until trove

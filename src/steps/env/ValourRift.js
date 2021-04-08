@@ -1,13 +1,12 @@
-import Step from "../step";
+import EnvironmentModule from "../environment-module";
 import op from "object-path";
 import db from "../../data";
 
-export default class ValourRift extends Step {
+export default class ValourRift extends EnvironmentModule {
 
   initialize(config) {
-    db.verifySetup(config["farmingSetup"]);
-
     this.config = config;
+    this.farmingSetup = db.verifySetup(config["farmingSetup"]);
   }
 
   shouldRun({ user }) {
@@ -27,14 +26,9 @@ export default class ValourRift extends Step {
     }
   }
 
-
-  async updateForOutside({ page, logger }) {
-    const farmingSetup = this.config["farmingSetup"];
-
-    if (farmingSetup) {
-      await page.armItems(farmingSetup);
-      logger.log("Exited tower & changed to farming setup.");
-    }
+  async updateForOutside(ctx) {
+    ctx.logger.log("Exited tower!");
+    await this.armSetup(ctx, this.farmingSetup, "farming setup");
   }
 
   async updateForTower(ctx) {

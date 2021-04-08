@@ -3,25 +3,6 @@ import StepLoadError from "../errors/step-load-error";
 
 export default class Step {
 
-  constructor() {
-    this.cache = {};
-  }
-
-  getCache(key) {
-    return this.cache[key];
-  }
-
-  hasCacheChanged(key, newValue) {
-    const cachedValue = this.cache[key];
-
-    if (cachedValue !== newValue) {
-      this.cache[key] = newValue;
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   get name() {
     return this.constructor.name;
   }
@@ -45,22 +26,13 @@ export default class Step {
       const { logger } = ctx;
       logger.open(`[${this.name}]`);
 
-      if (next) {
-        const closeBlockThenNext = () => {
-          logger.close();
-          return next();
-        };
-
-        if (!await this.shouldRun(ctx)) return closeBlockThenNext();
-        await this.run(ctx, closeBlockThenNext);
-
-      } else {
-        if (await this.shouldRun(ctx)) {
-          await this.run(ctx);
-        }
-
+      const closeBlockThenNext = () => {
         logger.close();
-      }
+        return next();
+      };
+
+      if (!await this.shouldRun(ctx)) return closeBlockThenNext();
+      await this.run(ctx, closeBlockThenNext);
     };
   }
 

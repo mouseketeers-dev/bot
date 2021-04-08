@@ -1,22 +1,22 @@
-import Step from "../step";
+import EnvironmentModule from "../environment-module";
+
 import op from "object-path";
 import db from "../../data";
 
-export default class FloatingIslands extends Step {
+export default class FloatingIslands extends EnvironmentModule {
 
   initialize(config) {
-    db.verifySetup(config["launchPadSetup"]);
-    db.verifySetup(config["wardenSetup"]);
-    db.verifySetup(config["paragonSetup"]);
-
     this.config = config;
+    this.paragonSetup = db.verifySetup(config["paragonSetup"]);
+    this.wardenSetup = db.verifySetup(config["wardenSetup"]);
+    this.launchPadSetup = db.verifySetup(config["launchPadSetup"]);
   }
 
   shouldRun({ user }) {
     return user["environment_type"] === "floating_islands";
   }
 
-  async run(ctx, next) {
+  async run(ctx) {
     const { user } = ctx;
 
     if (op.get(user, "enviroment_atts.on_island")) {
@@ -29,7 +29,7 @@ export default class FloatingIslands extends Step {
   //region Update
 
   async updateForIsland(ctx) {
-    const { page, user, logger } = ctx;
+    const { user, logger } = ctx;
 
     const enemyStatus = op.get(user, "enviroment_atts.enemy_state");
 
@@ -40,9 +40,9 @@ export default class FloatingIslands extends Step {
       logger.log(`Encountering ${enemyName}!`);
 
       if (isHighAltitude) {
-
+        await this.armSetup(ctx, this.paragonSetup, "Paragon setup");
       } else {
-        await this.armSetupFromConfig(ctx, "wardenConfig");
+        await this.armSetup(ctx, this.wardenSetup, "Warden setup");
       }
 
     } else if (enemyStatus === "enemyDefeated") { // defeated
@@ -54,15 +54,17 @@ export default class FloatingIslands extends Step {
 
       await this.armSavedSetup(ctx);
 
-      const islandProgress = this.getIslandProgress(user);
+      const { islandProgress, total } = this.getIslandProgress(user);
       const shouldRetreat =
         (isHighAltitude && islandProgress < this.config["leaveHighIslandBeforeHunt"])
         || (!isHighAltitude && islandProgress < this.config["leaveLowIslandBeforeHunt"]);
 
       if (shouldRetreat || this.isIslandFullyExplored(user)) {
         await this.retreat(ctx);
-        await this.armSetupFromConfig(ctx, "launchPadSetup");
         logger.log("Retreated to launch pad!");
+        await this.armSetup(ctx, this.launchPadSetup, "Launch Pad setup");
+      } else {
+        logger.log(`Current progress: ${islandProgress}/${total}.`);
       }
 
     } else if (enemyStatus === "enemyApproaching") { // marching
@@ -74,16 +76,6 @@ export default class FloatingIslands extends Step {
 
   }
 
-  async armSetupFromConfig({ page, logger }, setupName) {
-    const setup = this.config[setupName];
-    if (setup) {
-      await page.armItems(setup);
-      logger.log(`Changed to ${setupName}.`);
-    } else {
-      logger.log(`No ${setupName} in config. Skipping…`);
-    }
-  }
-
   //endregion
 
   //region User state getters
@@ -93,7 +85,9 @@ export default class FloatingIslands extends Step {
   }
 
   getIslandProgress(user) {
-    return op.get(user, "enviroment_atts.hunting_site_atts.island_progress");
+    const islandProgress = op.get(user, "enviroment_atts.hunting_site_atts.island_progress");
+    const enemyProgress = op.get(user, "enviroment_atts.hunting_site_atts.enemy_progress");
+    return { islandProgress, total: islandProgress + enemyProgress };
   }
 
   isIslandFullyExplored(user) {
@@ -107,7 +101,7 @@ export default class FloatingIslands extends Step {
   async armSavedSetup({ logger, user, page }) {
     const savedSetupInfo = op.get(user, "enviroment_atts.saved_trap_setup");
 
-    if (savedSetupInfo["has_setup"]) {   // only arm saved setup if it exists 
+    if (savedSetupInfo["has_setup"]) {    // only arm saved setup if it exists 
       if (!savedSetupInfo["is_active"]) { // and is not already armed
         await page.evaluate("hg.views.HeadsUpDisplayFloatingIslandsView.armSavedSetup()");
         logger.log("Saved setup armed.");
