@@ -11,7 +11,7 @@ const debug = createDebug("browser");
 
 const COOKIES_FILE = coalesce(
   process.env.COOKIES,
-  config.browser.cookiesFile,
+  config.browser["cookies"],
   INSTANCE_NAME ? `cookies_${INSTANCE_NAME}.json` : "cookies.json"
 );
 const COOKIES_URL = new URL(COOKIES_FILE, BASE_SETTINGS_FOLDER_URL);
@@ -75,15 +75,15 @@ async function initializePage(browserConfig) {
   }
 
   if (!currentUrl.includes("www.mousehuntgame.com")) {
-    await tryLoadingPage(page);
+    await tryLoadingMouseHunt(page);
   }
 
-  await verifyCamp(page, mode);
+  await checkForCamp(page, mode);
 
   const user = await page.evaluate("window.user");
   if (user) {
     console.log(BLANK_LINE);
-    console.log(`Camp loaded! User: ${user.username}, location: ${user.environment_name}.`);
+    console.log(`Camp loaded! User: ${user.username}, location: ${user["environment_name"]}.`);
     console.log(BLANK_LINE);
   }
 
@@ -92,7 +92,7 @@ async function initializePage(browserConfig) {
 
 //region Browsers
 
-async function tryLoadingPage(page, retries = 3) {
+async function tryLoadingMouseHunt(page, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       await page.goto('https://www.mousehuntgame.com', {
@@ -182,7 +182,7 @@ function prefixTitleWithFirstName(page) {
       function prefixTitle() {
         if (!document.title.startsWith("[")) {
           observer.disconnect();
-          const name = window.user ? window.user.firstname : userSettingsName;
+          const name = window.user ? window.user["firstname"] : userSettingsName;
           document.title = `[${name}] ${document.title}`;
           observer.observe(target, { childList: true });
         }
@@ -198,11 +198,11 @@ function prefixTitleWithFirstName(page) {
 
 //region Setup & Login
 
-async function verifyCamp(page, mode) {
+async function checkForCamp(page, mode) {
   const currentUrl = await page.url();
 
   if (currentUrl.endsWith("camp.php")) {
-
+    // okay
   } else if (currentUrl.endsWith("login.php")) {
     await waitForLogin(page, mode);
   } else {

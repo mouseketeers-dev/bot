@@ -1,7 +1,6 @@
 import Step from "../step";
 import config from "../../config";
 import createDebug from "../../utils/debug";
-import {BLANK_LINE} from "../../utils/helpers";
 import wordWrap from "word-wrap";
 
 const debug = createDebug("UpdateEnvironment");
@@ -15,13 +14,10 @@ export default class UpdateEnvironment extends Step {
 
     if (!Array.isArray(modules)) modules = [];
 
-    if (debug.enabled) {
-      debug("Enabled modules: " + (modules.length === 0 ? "none" : modules.join(", ")));
-    }
-
     const steps = [];
 
     for (const module of modules) {
+      debug("loading module: " + module);
       const step = await Step.tryLoadStep(module, config, "env");
       steps.push(step);
     }

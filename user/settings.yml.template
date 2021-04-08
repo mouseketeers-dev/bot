@@ -1,7 +1,0 @@
-# Clone this file to settings_<user>.yml, then update the cookiesFile's user to the correct value.
-
-browser:
-  cookiesFile: cookies_<user>.json
-
-UpdateEnvironment:
-  # - ValourRift

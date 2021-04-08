@@ -26,8 +26,9 @@ export default class ClosePopups extends Step {
 
     if (isOnboardArrowVisible) {
       const popupContent = await page.evaluate(() => document.querySelector("#OnboardArrow h2").textContent?.trim());
-      logger.log("Popup: " + popupContent);
-      logger.log("Closing onboard arrow…");
+      logger.log("Closing popup…");
+      logger.log("> " + popupContent);
+
       await sleep("1s");
       await page.evaluate(() => {
         document.querySelector("#OnboardArrow")?.remove(); // remove arrow

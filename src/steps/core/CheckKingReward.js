@@ -20,7 +20,7 @@ export default class CheckKingReward extends Step {
     if (!["buffer", "download"].includes(this.mode)) {
       throw new InvalidConfigError("CheckKingReward.mode must be either 'buffer' or 'download'.");
     }
-    
+
     debug("mode = " + this.mode);
 
     return Solver.initialize();
@@ -40,10 +40,19 @@ export default class CheckKingReward extends Step {
     }
 
     logger.log("Solving captcha…");
-    let tryCount = 0;
+    await this.trySolveCaptchaWithRetry(ctx);
 
-    do {
-      tryCount++;
+    logger.log('Captcha solved!');
+    await this.closePuzzlePage(ctx);
+
+    state.cycleDelay = "1s"; // after solving King's Reward, start the next cycle right away to sound the horn if any.
+    return next();
+  }
+
+  async trySolveCaptchaWithRetry(ctx) {
+    const { logger, page } = ctx;
+
+    for (let attempt = 0; attempt < this.maxRetry; attempt++) {
       let captcha;
 
       try {
@@ -53,7 +62,7 @@ export default class CheckKingReward extends Step {
           captcha = await this.solveCaptchaByDownload(ctx);
         }
 
-        logger.log(`Guess #${tryCount}: ${captcha}`);
+        logger.log(`Guess #${attempt}: ${captcha}`);
       } catch (e) {
         logger.log("Error while solving captcha: ");
         logger.log(e);
@@ -69,17 +78,11 @@ export default class CheckKingReward extends Step {
       logger.log('Submitting…');
       await this.submitCaptcha(ctx, captcha);
 
-    } while (await page.hasKingReward() || tryCount > this.maxRetry);
-
-    if (tryCount > this.maxRetry) {
-      throw new FlowError("Unable to solve captcha: max number of tries exceeded.");
-    } else {
-      logger.log('Captcha solved!');
-      await this.closePuzzlePage(ctx);
+      const hasKingReward = await page.hasKingReward();
+      if (!hasKingReward) return;
     }
 
-    state.cycleDelay = "1s"; // after solving King's Reward, start the next cycle right away for possible horn.
-    return next();
+    throw new FlowError("Unable to solve captcha: max number of attempts exceeded.");
   }
 
   async solveCaptchaByBuffer(ctx) {
