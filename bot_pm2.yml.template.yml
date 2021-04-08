@@ -2,10 +2,11 @@
 
 # 1. Prerequisites: install `npm install --global pm2`.
 # 2. Inside `bot` folder, clone this file to `bot_pm2.yml`.
-# 3. Duplicate "app" block for each MouseHunt user, and update its "name" and "USER_SETTINGS" field.
-#    The "settings_<user>.yml" files should be in `bot/user`.
-
-# 4. For new users (no cookies file generated yet), you can opt to supply the username/password in the config below.
+# 3. Duplicate "user1" for each MouseHunt user, and update its "name" property. 
+#    The "env" block in "user2" shows the default values for BASE_SETTINGS, USER_SETTINGS and COOKIES which will be
+#    automatically derived from the app's name. There is no need to explicitly supply these values.
+# 4. For new users (no cookies file generated yet), you can opt to supply the username/password in "env".
+#
 # 5. First time run: `pm2 start bot_pm2.yml`. This command will load the users in this config to pm2.
 #    Subsequent runs: `pm2 start all`
 
@@ -19,18 +20,15 @@ apps:
     script: src/index.js
     node_args: --experimental-specifier-resolution=node
     autorestart: false
-    env:
-      BASE_SETTINGS: settings.yml
-      USER_SETTINGS: settings_user1.yml
-      # MOUSEHUNT_USERNAME: <username>
-      # MOUSEHUNT_PASSWORD: <password>
 
   - name: user2
     script: src/index.js
     node_args: --experimental-specifier-resolution=node
     autorestart: false
-    env:
-      BASE_SETTINGS: settings.yml
-      USER_SETTINGS: settings_user2.yml
+
+      # env:
+      # BASE_SETTINGS: settings.yml
+      # USER_SETTINGS: settings_user2.yml
+      # COOKIES: cookies_user2.yml
       # MOUSEHUNT_USERNAME: <username>
-      # MOUSEHUNT_PASSWORD: <password>
+    # MOUSEHUNT_PASSWORD: <password>

@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import config, {USER_SETTINGS_FILE, USER_SETTINGS_FILE_NO_EXT} from './config';
+import config from './config';
 import browser from './utils/browser';
 import flow from "./steps/flow";
 import server from "./server";
@@ -42,8 +42,6 @@ async function startFlow(page) {
 }
 
 showBanner();
-console.log(`Config loaded from: "${USER_SETTINGS_FILE}".`);
-
 // SegfaultHandler.registerHandler(`${USER_SETTINGS_FILE_NO_EXT}-crash.log`);
 
 main()

@@ -3,13 +3,17 @@ import puppeteer from "puppeteer";
 import {promises as fs} from 'fs';
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
-import {BLANK_LINE, sleep} from "./helpers";
-import config, {USER_SETTINGS_FILE_NO_EXT, BASE_SETTINGS_FOLDER_URL} from "../config";
+import {BLANK_LINE, coalesce, sleep} from "./helpers";
+import config, {BASE_SETTINGS_FOLDER_URL, INSTANCE_NAME} from "../config";
 import createDebug from "./debug";
 
 const debug = createDebug("browser");
 
-const COOKIES_FILE = config.browser.cookiesFile || "cookies.json";
+const COOKIES_FILE = coalesce(
+  process.env.COOKIES,
+  config.browser.cookiesFile,
+  INSTANCE_NAME ? `cookies_${INSTANCE_NAME}.json` : "cookies.json"
+);
 const COOKIES_URL = new URL(COOKIES_FILE, BASE_SETTINGS_FOLDER_URL);
 const { MOUSEHUNT_USERNAME, MOUSEHUNT_PASSWORD } = process.env;
 
@@ -22,14 +26,18 @@ const Modes = {
 };
 
 debug("Cookies file: " + COOKIES_FILE);
-debug("Cookies url: " + COOKIES_URL.pathname);
+debug("Cookies url: " + COOKIES_URL);
 
 export default {
   initializePage
 };
 
 async function initializePage(browserConfig) {
-  const mode = browserConfig.mode?.toLowerCase();
+  const mode = coalesce(
+    process.env.BROWSER_MODE,
+    browserConfig.mode
+  ).toLowerCase();
+
   const config = browserConfig[mode] || {};
   let browser;
 
@@ -183,7 +191,7 @@ function prefixTitleWithFirstName(page) {
       setTimeout(prefixTitle, 1000);
       prefixed = true;
     });
-  }, USER_SETTINGS_FILE_NO_EXT);
+  }, INSTANCE_NAME);
 }
 
 //endregion

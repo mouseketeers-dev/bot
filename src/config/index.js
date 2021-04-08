@@ -2,15 +2,17 @@ import util from 'util';
 import deepAssign from 'object-assign-deep';
 import path from "path";
 import url from "url";
-import {loadYamlSync} from "../utils/helpers";
+import {coalesce, loadYamlSync} from "../utils/helpers";
 import createDebug from "../utils/debug";
 
 const debug = createDebug("config");
 
+export const INSTANCE_NAME = process.env.name || null;
+
 const BASE_SETTINGS_FILE = process.env.BASE_SETTINGS?.trim() || "settings.yml";
 debug("Base settings file: " + BASE_SETTINGS_FILE);
 
-// if user_settings is a file, resolve it to "user" folder.
+// if base_settings is a file, resolve it to "user" folder.
 // if it's an absolute path, use that path instead.
 export const BASE_SETTINGS_FOLDER_URL = (() => {
   const folder = path.dirname(BASE_SETTINGS_FILE);
@@ -20,12 +22,17 @@ export const BASE_SETTINGS_FOLDER_URL = (() => {
     return url.pathToFileURL(folder + "/");
   }
 })();
+
 debug("Settings folder: " + BASE_SETTINGS_FOLDER_URL);
 
-export const USER_SETTINGS_FILE = process.env.USER_SETTINGS?.trim() || "";
-export const USER_SETTINGS_FILE_NO_EXT = path.parse(USER_SETTINGS_FILE).name;
+export const USER_SETTINGS_FILE = coalesce(
+  process.env.USER_SETTINGS?.trim(),
+  (INSTANCE_NAME ? `settings_${INSTANCE_NAME}.yml` : null)
+);
 
-debug("User settings file: " + USER_SETTINGS_FILE);
+if (USER_SETTINGS_FILE) {
+  debug("User settings file: " + USER_SETTINGS_FILE);
+}
 
 function load() {
   try {
@@ -34,8 +41,12 @@ function load() {
     const baseConfigUrl = new URL(BASE_SETTINGS_FILE, BASE_SETTINGS_FOLDER_URL);
     let baseConfig = loadYamlSync(baseConfigUrl);
 
-    const userConfigUrl = new URL(USER_SETTINGS_FILE, BASE_SETTINGS_FOLDER_URL);
-    let userConfig = loadYamlSync(userConfigUrl, {});
+    let userConfig = {};
+
+    if (USER_SETTINGS_FILE) {
+      const userConfigUrl = new URL(USER_SETTINGS_FILE, BASE_SETTINGS_FOLDER_URL);
+      userConfig = loadYamlSync(userConfigUrl, {});
+    }
 
     const mergedConfig = deepAssign({}, defaultConfig, baseConfig, userConfig);
 

@@ -1,5 +1,9 @@
 import debug from 'debug';
 
-const createDebug = (name) => debug("mkt:" + name);
+const createDebug = (name) => {
+  const d = debug("mkt:" + name);
+  d.log = console.log.bind(console);
+  return d;
+};
 
 export default createDebug;

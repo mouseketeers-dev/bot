@@ -1,5 +1,8 @@
 import fs from "fs";
 import yaml from "js-yaml";
+import path from "path";
+import os from "os";
+import {v4 as uuidv4} from 'uuid';
 
 export default {
   sleep
@@ -44,3 +47,24 @@ export function loadYamlSync(fileUrl, defaultValue) {
   }
 }
 
+export function createTempFile(ext) {
+  const fileName = uuidv4() + "." + ext;
+  return path.resolve(os.tmpdir(), fileName);
+}
+
+export function coalesce(...args) {
+  for (const arg of args) {
+    if (arg) return arg;
+  }
+
+  return null;
+}
+
+export function isFileAccessibleSync(fileUrl) {
+  try {
+    fs.accessSync(fileUrl);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}

@@ -34,6 +34,7 @@ HourlyTrapCheck:
   trapCheckMinutes: 30
 
 CheckKingReward:
+  mode: download
   maxRetry: 5
 
 UpdateEnvironment:
@@ -62,5 +63,5 @@ FloatingIslands:
 
 ValourRift:
   farmingSetup:
-    bait: brie_string_cheese
-    charm: RVC
+    bait:
+    charm:

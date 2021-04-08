@@ -58,9 +58,8 @@ export default class UpdateEnvironment extends Step {
     );
 
     if (resultText) {
-      logger.log(BLANK_LINE);
-      logger.log(wordWrap(resultText, { width: 60, indent: "" }));
-      logger.log(BLANK_LINE);
+      const formattedText = wordWrap(resultText, { width: 60, indent: "> " });
+      logger.log(formattedText);
     }
   }
 }

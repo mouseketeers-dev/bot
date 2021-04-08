@@ -3,12 +3,26 @@ import Solver from "king-reward-solver";
 
 import Step from "../step";
 import FlowError from "../../errors/flow-error";
-import {sleep} from "../../utils/helpers";
+import {createTempFile, sleep} from "../../utils/helpers";
+import fs from "fs/promises";
+
+import createDebug from "../../utils/debug";
+import InvalidConfigError from "../../errors/invalid-config-error";
+
+const debug = createDebug("CheckKingReward");
 
 export default class CheckKingReward extends Step {
 
   initialize(config) {
     this.maxRetry = config["maxRetry"];
+    this.mode = config["mode"];
+
+    if (!["buffer", "download"].includes(this.mode)) {
+      throw new InvalidConfigError("CheckKingReward.mode must be either 'buffer' or 'download'.");
+    }
+    
+    debug("mode = " + this.mode);
+
     return Solver.initialize();
   }
 
@@ -30,12 +44,15 @@ export default class CheckKingReward extends Step {
 
     do {
       tryCount++;
-
-      const captchaImg = await this.fetchCurrentCaptcha(ctx);
       let captcha;
 
       try {
-        captcha = await Solver.solve(captchaImg);
+        if (this.mode === "buffer") {
+          captcha = await this.solveCaptchaByBuffer(ctx);
+        } else if (this.mode === "download") {
+          captcha = await this.solveCaptchaByDownload(ctx);
+        }
+
         logger.log(`Guess #${tryCount}: ${captcha}`);
       } catch (e) {
         logger.log("Error while solving captcha: ");
@@ -65,10 +82,33 @@ export default class CheckKingReward extends Step {
     return next();
   }
 
+  async solveCaptchaByBuffer(ctx) {
+    const captchaImg = await this.fetchCurrentCaptcha(ctx);
+    return Solver.solve(captchaImg);
+  }
+
+  async solveCaptchaByDownload(ctx) {
+    const captchaImg = await this.fetchCurrentCaptcha(ctx);
+    const captchaFile = await this.downloadCaptchaToFile(captchaImg);
+    debug(`Captcha downloaded to ` + captchaFile);
+
+    try {
+      return Solver.solve(captchaFile);
+    } finally {
+      if (captchaFile) await fs.rm(captchaFile);
+    }
+  }
+
   fetchCurrentCaptcha({ page }) {
     return page.$eval(".mousehuntPage-puzzle-form-captcha-image > img[src]", e => e["src"])
       .then(url => fetch(url))
       .then(res => res.buffer());
+  }
+
+  async downloadCaptchaToFile(buffer) {
+    const captchaName = createTempFile("png");
+    await fs.writeFile(captchaName, buffer);
+    return captchaName;
   }
 
   async loadNewCaptcha({ page }) {

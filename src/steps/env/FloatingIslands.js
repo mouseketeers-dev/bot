@@ -24,8 +24,6 @@ export default class FloatingIslands extends Step {
     } else {
       await this.updateForLaunchPad(ctx);
     }
-
-    return next();
   }
 
   //region Update
@@ -34,7 +32,6 @@ export default class FloatingIslands extends Step {
     const { page, user, logger } = ctx;
 
     const enemyStatus = op.get(user, "enviroment_atts.enemy_state");
-    if (!this.hasCacheChanged("enemyStatus", enemyStatus)) return;
 
     const enemyName = op.get(user, "enviroment_atts.hunting_site_atts.enemy.name");
     const isHighAltitude = this.isHighAltitude(user);
@@ -45,25 +42,27 @@ export default class FloatingIslands extends Step {
       if (isHighAltitude) {
 
       } else {
-        const wardenSetup = this.config["wardenSetup"];
-        if (wardenSetup) {
-          await page.armItems(wardenSetup);
-          logger.log("Changed to warden setup.");
-        } else {
-          logger.log("No warden setup in config. Skipping…");
-        }
+        await this.armSetupFromConfig(ctx, "wardenConfig");
       }
 
     } else if (enemyStatus === "enemyDefeated") { // defeated
-      logger.log(`Defeated ${enemyName}!`);
+      if (this.hasCacheChanged("enemyStatus", enemyStatus)) {
+        logger.log(`Defeated ${enemyName}!`);
+      } else {
+        logger.log(`${enemyName} was already defeated. Staying on island.`);
+      }
+
       await this.armSavedSetup(ctx);
 
       const islandProgress = this.getIslandProgress(user);
-      const shouldRetreat = (isHighAltitude && islandProgress < this.config["leaveHighIslandBeforeHunt"])
-        || (!isHighAltitude && islandProgress < this.config("leaveLowIslandBeforeHunt"));
+      const shouldRetreat =
+        (isHighAltitude && islandProgress < this.config["leaveHighIslandBeforeHunt"])
+        || (!isHighAltitude && islandProgress < this.config["leaveLowIslandBeforeHunt"]);
 
       if (shouldRetreat || this.isIslandFullyExplored(user)) {
         await this.retreat(ctx);
+        await this.armSetupFromConfig(ctx, "launchPadSetup");
+        logger.log("Retreated to launch pad!");
       }
 
     } else if (enemyStatus === "enemyApproaching") { // marching
@@ -71,8 +70,18 @@ export default class FloatingIslands extends Step {
     }
   }
 
-  async updateForLaunchPad(ctx) {
+  updateForLaunchPad(ctx) {
 
+  }
+
+  async armSetupFromConfig({ page, logger }, setupName) {
+    const setup = this.config[setupName];
+    if (setup) {
+      await page.armItems(setup);
+      logger.log(`Changed to ${setupName}.`);
+    } else {
+      logger.log(`No ${setupName} in config. Skipping…`);
+    }
   }
 
   //endregion
@@ -109,9 +118,8 @@ export default class FloatingIslands extends Step {
 
   }
 
-  async retreat({ page, logger }) {
-    await page.evaluate("hg.views.HeadsUpDisplayFloatingIslandsView.retreat()");
-    logger.log("Retreated to launch pad!");
+  retreat({ page }) {
+    return page.evaluate("hg.views.HeadsUpDisplayFloatingIslandsView.retreat()");
   }
 
   //endregion
