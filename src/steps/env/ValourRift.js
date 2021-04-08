@@ -33,7 +33,7 @@ export default class ValourRift extends Step {
 
     if (farmingSetup) {
       await page.armItems(farmingSetup);
-      logger.log("Changed to farming setup.");
+      logger.log("Exited tower & changed to farming setup.");
     }
   }
 

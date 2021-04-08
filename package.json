@@ -22,7 +22,9 @@
     "object-path": "^0.11.5",
     "puppeteer": "^8.0.0",
     "readline-promise": "^1.0.5",
-    "segfault-handler": "^1.3.0",
     "word-wrap": "^1.2.3"
+  },
+  "devDependencies": {
+    "segfault-handler": "^1.3.0"
   }
 }
