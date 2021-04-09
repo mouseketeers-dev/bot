@@ -68,3 +68,26 @@ export function isFileAccessibleSync(fileUrl) {
     return false;
   }
 }
+
+
+const merge = (dest, src) => {
+  for (const key of Object.keys(src)) {
+    const srcValue = src[key];
+    const destValue = dest[key];
+    if (destValue === null || typeof destValue === "undefined") {
+      dest[key] = srcValue;
+    } else if (typeof srcValue === "object" && srcValue !== null && typeof destValue === "object") {
+      merge(destValue, srcValue);
+    }
+  }
+};
+
+export function deepMerge(...objs) {
+  const ret = {};
+
+  for (const obj of objs) {
+    merge(ret, obj);
+  }
+
+  return ret;
+}

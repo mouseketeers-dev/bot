@@ -1,8 +1,7 @@
 import util from 'util';
-import deepAssign from 'object-assign-deep';
 import path from "path";
 import url from "url";
-import {coalesce, loadYamlSync} from "../utils/helpers";
+import {deepMerge, coalesce, loadYamlSync} from "../utils/helpers";
 import createDebug from "../utils/debug";
 
 const debug = createDebug("config");
@@ -48,7 +47,7 @@ function load() {
       userConfig = loadYamlSync(userConfigUrl, {});
     }
 
-    const mergedConfig = deepAssign({}, defaultConfig, baseConfig, userConfig);
+    const mergedConfig = deepMerge(defaultConfig, baseConfig, userConfig);
 
     return Object.freeze(mergedConfig);
   } catch (e) {

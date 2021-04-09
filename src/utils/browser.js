@@ -1,8 +1,11 @@
 import fetch from "node-fetch";
 import puppeteer from "puppeteer";
 import {promises as fs} from 'fs';
+import url from 'url';
+
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
+
 import {BLANK_LINE, coalesce, sleep} from "./helpers";
 import config, {BASE_SETTINGS_FOLDER_URL, INSTANCE_NAME} from "../config";
 import createDebug from "./debug";
@@ -11,6 +14,7 @@ const debug = createDebug("browser");
 
 //TODO: clean browser profile
 // https://github.com/puppeteer/puppeteer/issues/866
+// https://github.com/puppeteer/puppeteer/issues/1791
 
 const COOKIES_FILE = coalesce(
   process.env.COOKIES,
@@ -21,6 +25,13 @@ const COOKIES_URL = new URL(COOKIES_FILE, BASE_SETTINGS_FOLDER_URL);
 const { MOUSEHUNT_USERNAME, MOUSEHUNT_PASSWORD } = process.env;
 
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4427.0 Safari/537.36";
+
+const USER_DATA_DIR = url.fileURLToPath(
+  new URL(
+    INSTANCE_NAME ? "puppeteer_dev_chrome_profile-" + INSTANCE_NAME : "puppeteer_dev_chrome_profile",
+    BASE_SETTINGS_FOLDER_URL
+  )
+);
 
 const Modes = {
   Window: "window",
@@ -121,7 +132,8 @@ async function tryLoadingMouseHunt(page, retries = 3) {
 function openWindowBrowser(windowConfig) {
   const launchConfig = {
     headless: false,
-    defaultViewport: null
+    defaultViewport: null,
+    userDataDir: USER_DATA_DIR
   };
 
   const browserPath = windowConfig["browserPath"];
@@ -137,7 +149,8 @@ function openWindowBrowser(windowConfig) {
 async function openHeadlessBrowser(headlessConfig) {
   const launchConfig = {
     headless: true,
-    defaultViewport: { width: 1024, height: 768 }
+    defaultViewport: { width: 1024, height: 768 },
+    userDataDir: USER_DATA_DIR
   };
 
   console.log("Opening headless browser…");
