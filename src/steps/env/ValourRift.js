@@ -19,7 +19,7 @@ export default class ValourRift extends EnvironmentModule {
 
     if (currentState === "farming") {
       // no need to update if we're still farming
-      if (!this.hasCacheChanged("currentState", currentState)) return;
+      if (!this.hasValueChanged("currentState", currentState)) return;
       await this.updateForOutside(ctx);
     } else if (currentState === "tower") {
       await this.updateForTower(ctx);
@@ -37,7 +37,7 @@ export default class ValourRift extends EnvironmentModule {
     const currentFloor = op.get(user, "enviroment_atts.floor");
 
     // no need to update if we're on the same floor
-    if (!this.hasCacheChanged("currentFloor", currentFloor)) return;
+    if (!this.hasValueChanged("currentFloor", currentFloor)) return;
 
     logger.log("Current floor: " + currentFloor);
 

@@ -4,7 +4,6 @@ import HuntTriggeringStep from "../hunt-triggering-step";
 export default class HourlyTrapCheck extends HuntTriggeringStep {
 
   initialize(config) {
-    // refactor to config
     this.trapCheckMinutes = config["trapCheckMinutes"];
     this.nextTrapCheckTime = this.computeNextTrapCheckTime();
   }

@@ -36,6 +36,11 @@ export default class FloatingIslands extends EnvironmentModule {
     const enemyName = op.get(user, "enviroment_atts.hunting_site_atts.enemy.name");
     const isHighAltitude = this.isHighAltitude(user);
 
+    const {
+      islandProgress, totalSteps,
+      currentTileIndex, currentTileName
+    } = this.getIslandProgress(user);
+
     if (enemyStatus === "enemyActive") { // encountering
       logger.log(`Encountering ${enemyName}!`);
 
@@ -46,7 +51,7 @@ export default class FloatingIslands extends EnvironmentModule {
       }
 
     } else if (enemyStatus === "enemyDefeated") { // defeated
-      if (this.hasCacheChanged("enemyStatus", enemyStatus)) {
+      if (this.hasValueChanged("enemyStatus", enemyStatus)) {
         logger.log(`Defeated ${enemyName}!`);
       } else {
         logger.log(`${enemyName} was already defeated. Staying on island.`);
@@ -54,7 +59,6 @@ export default class FloatingIslands extends EnvironmentModule {
 
       await this.armSavedSetup(ctx);
 
-      const { islandProgress, total } = this.getIslandProgress(user);
       const shouldRetreat =
         (isHighAltitude && islandProgress < this.config["leaveHighIslandBeforeHunt"])
         || (!isHighAltitude && islandProgress < this.config["leaveLowIslandBeforeHunt"]);
@@ -64,11 +68,13 @@ export default class FloatingIslands extends EnvironmentModule {
         logger.log("Retreated to launch pad!");
         await this.armSetup(ctx, this.launchPadSetup, "Launch Pad setup");
       } else {
-        logger.log(`Current progress: ${islandProgress}/${total}.`);
+        logger.log(`Current progress: ${islandProgress}/${totalSteps}.`);
       }
 
     } else if (enemyStatus === "enemyApproaching") { // marching
-
+      if (this.hasValueChanged("currentTileIndex", currentTileIndex)) {
+        logger.log("Current tile: " + currentTileName + ".");
+      }
     }
   }
 
@@ -85,9 +91,17 @@ export default class FloatingIslands extends EnvironmentModule {
   }
 
   getIslandProgress(user) {
-    const islandProgress = op.get(user, "enviroment_atts.hunting_site_atts.island_progress");
-    const enemyProgress = op.get(user, "enviroment_atts.hunting_site_atts.enemy_progress");
-    return { islandProgress, total: islandProgress + enemyProgress };
+    const huntingAttrs = op.get(user, "enviroment_atts.hunting_site_atts");
+
+    const islandProgress = huntingAttrs["island_progress"];
+
+    const huntPerTile = huntingAttrs["num_hunts_per_mod"];
+    const currentTileIndex = Math.floor(islandProgress / huntPerTile);
+    const currentTileName = huntingAttrs["island_mod_panels"][currentTileIndex]?.name;
+
+    const totalSteps = huntPerTile * huntingAttrs["island_mod_panels"].length;
+
+    return { islandProgress, totalSteps, currentTileIndex, currentTileName };
   }
 
   isIslandFullyExplored(user) {

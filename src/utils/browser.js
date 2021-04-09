@@ -9,6 +9,9 @@ import createDebug from "./debug";
 
 const debug = createDebug("browser");
 
+//TODO: clean browser profile
+// https://github.com/puppeteer/puppeteer/issues/866
+
 const COOKIES_FILE = coalesce(
   process.env.COOKIES,
   config.browser["cookies"],

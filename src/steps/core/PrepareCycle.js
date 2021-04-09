@@ -1,5 +1,6 @@
 import moment from "moment";
 import {BLANK_LINE, sleep} from "../../utils/helpers";
+import FlowError from "../../errors/flow-error";
 
 export default (config) => async function prepareCycle(ctx, next) {
   const { page, state, logger } = ctx;
@@ -17,19 +18,20 @@ export default (config) => async function prepareCycle(ctx, next) {
 
     if (ex.message.includes("Timeout exceeded while waiting for event")) {
       //TODO: add count for TimeoutError
-      logger.log("Reloading page due to timeout...");
+      logger.log("Reloading page due to timeout…");
       await page.reload();
-      state.cycleDelay = "10s";
     } else if (ex.message.includes("Execution context was destroyed")) {
       // this is likely due to the page just randomly restarting
-      logger.log("Reloading page due to navigation...");
+      logger.log("Reloading page due to navigation…");
+      await page.reload();
+    } else if (ex instanceof FlowError && ex.shouldReload) {
       await page.reload();
     } else {
-      console.log("Unrecoverable error. Exiting...");
+      console.log("Unrecoverable error. Exiting…");
       process.exit(1);
     }
   }
 
-  logger.close("[end]\n" + BLANK_LINE);
+  logger.close("[end]\n" + BLANK_LINE, true);
   await sleep(state.cycleDelay);
 }

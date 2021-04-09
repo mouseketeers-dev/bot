@@ -47,8 +47,11 @@ export default class Logger {
     if (data !== undefined) { this.info(data); }
   }
 
-  close(data) {
-    this.currentLogBlock = this.currentLogBlock?.close(data);
+  close(data, all = false) {
+    do {
+      this.currentLogBlock = this.currentLogBlock?.close(data);
+      data = null;
+    } while (all && this.currentLogBlock); // close once if all = false, close all if all = true
   }
 
   info(data) {

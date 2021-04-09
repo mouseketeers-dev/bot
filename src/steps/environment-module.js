@@ -12,7 +12,7 @@ export default class EnvironmentModule extends Step {
     return this.cache[key];
   }
 
-  hasCacheChanged(key, newValue) {
+  hasValueChanged(key, newValue) {
     const cachedValue = this.cache[key];
 
     if (cachedValue !== newValue) {
@@ -35,7 +35,7 @@ export default class EnvironmentModule extends Step {
   build() {
     return async (ctx) => {
       const { logger } = ctx;
-      
+
       logger.open(`[${this.name}]`);
 
       if (await this.shouldRun(ctx)) {

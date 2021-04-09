@@ -40,7 +40,7 @@ export default class CheckKingReward extends Step {
     }
 
     logger.log("Solving captcha…");
-    await this.trySolveCaptchaWithRetry(ctx);
+    await this.solveCaptchaWithRetry(ctx);
 
     logger.log('Captcha solved!');
     await this.closePuzzlePage(ctx);
@@ -49,20 +49,29 @@ export default class CheckKingReward extends Step {
     return next();
   }
 
-  async trySolveCaptchaWithRetry(ctx) {
+  async solveCaptchaWithRetry(ctx) {
     const { logger, page } = ctx;
 
     for (let attempt = 0; attempt < this.maxRetry; attempt++) {
+      const captchaBuffer = await this.fetchCurrentCaptcha(ctx);
+      if (captchaBuffer === null) {
+        throw new FlowError("Unable to load captcha!");
+      }
+
       let captcha;
 
       try {
+        logger.log(`Attempt #${attempt}:`);
+
+
         if (this.mode === "buffer") {
-          captcha = await this.solveCaptchaByBuffer(ctx);
+          captcha = await this.solveCaptchaByBuffer(captchaBuffer);
         } else if (this.mode === "download") {
-          captcha = await this.solveCaptchaByDownload(ctx);
+          captcha = await this.solveCaptchaByDownload(captchaBuffer);
         }
 
-        logger.log(`Guess #${attempt}: ${captcha}`);
+        logger.log(`Guess: ${captcha}`);
+
       } catch (e) {
         logger.log("Error while solving captcha: ");
         logger.log(e);
@@ -71,7 +80,6 @@ export default class CheckKingReward extends Step {
       if (!captcha || captcha.length !== 5 || captcha.includes("?")) {
         logger.log('Unable to solve, loading new captcha…');
         await this.loadNewCaptcha(ctx);
-        await sleep("1s");
         continue;
       }
 
@@ -85,14 +93,12 @@ export default class CheckKingReward extends Step {
     throw new FlowError("Unable to solve captcha: max number of attempts exceeded.");
   }
 
-  async solveCaptchaByBuffer(ctx) {
-    const captchaImg = await this.fetchCurrentCaptcha(ctx);
-    return Solver.solve(captchaImg);
+  async solveCaptchaByBuffer(buffer) {
+    return Solver.solve(buffer);
   }
 
-  async solveCaptchaByDownload(ctx) {
-    const captchaImg = await this.fetchCurrentCaptcha(ctx);
-    const captchaFile = await this.downloadCaptchaToFile(captchaImg);
+  async solveCaptchaByDownload(buffer) {
+    const captchaFile = await this.downloadCaptchaToFile(buffer);
     debug(`Captcha downloaded to ` + captchaFile);
 
     try {
@@ -102,10 +108,22 @@ export default class CheckKingReward extends Step {
     }
   }
 
-  fetchCurrentCaptcha({ page }) {
-    return page.$eval(".mousehuntPage-puzzle-form-captcha-image > img[src]", e => e["src"])
-      .then(url => fetch(url))
-      .then(res => res.buffer());
+  async fetchCurrentCaptcha({ page, logger }) {
+    try {
+      const url = await page.$eval(".mousehuntPage-puzzle-form-captcha-image > img[src]", e => e["src"]);
+
+      if (!url) return null;
+
+      const res = await fetch(url);
+      const buffer = await res.buffer();
+
+      if (buffer.length === 0) return null;
+
+      return buffer;
+    } catch (err) {
+      logger.log(err);
+      return null;
+    }
   }
 
   async downloadCaptchaToFile(buffer) {
@@ -117,6 +135,7 @@ export default class CheckKingReward extends Step {
   async loadNewCaptcha({ page }) {
     await page.evaluate("app.views.HeadsUpDisplayView.hud.getNewPuzzle()");
     await page.waitForSuccessfulResponse("puzzleimage.php");
+    await sleep("1s");
   }
 
   async submitCaptcha({ page, logger }, captcha) {
@@ -124,9 +143,10 @@ export default class CheckKingReward extends Step {
       "#mousehuntHud input.mousehuntPage-puzzle-form-code",
       (el, text) => el.value = text, captcha
     );
-    await sleep(1000);
+    await sleep("1s");
     await page.evaluate("app.views.HeadsUpDisplayView.hud.submitPuzzleForm()");
     await page.waitForSuccessfulResponse("solvePuzzle.php");
+    await sleep("1s");
   }
 
   async closePuzzlePage({ page }) {

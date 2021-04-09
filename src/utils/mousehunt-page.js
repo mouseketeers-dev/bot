@@ -178,7 +178,7 @@ export default class MouseHuntPage {
     const currentlyArmedItemId = (await this.user())[apiItemType + "_item_id"];
 
     if (currentlyArmedItemId === item.id) {
-      debug(`Item "${item.name}" is already armed. Skipping...`);
+      debug(`Item "${item.name}" is already armed. Skipping…`);
       return;
     }
 
@@ -188,7 +188,7 @@ export default class MouseHuntPage {
       });
     }, apiItemType, item.key);
 
-    debug(`Item "${item.name}" is now armed.`);
+    debug(`Item "${item.name}" is now armed…`);
   }
 
   async armItems(setup) {
