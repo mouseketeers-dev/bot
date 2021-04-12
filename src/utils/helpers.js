@@ -72,12 +72,13 @@ export function isFileAccessibleSync(fileUrl) {
 
 const merge = (dest, src) => {
   for (const key of Object.keys(src)) {
-    const srcValue = src[key];
-    const destValue = dest[key];
-    if (destValue === null || typeof destValue === "undefined") {
-      dest[key] = srcValue;
-    } else if (typeof srcValue === "object" && srcValue !== null && typeof destValue === "object") {
-      merge(destValue, srcValue);
+    if (src[key] === null) continue;
+
+    if (typeof src[key] !== "object" || Array.isArray(src[key])) {
+      dest[key] = src[key];
+    } else if (typeof src[key] === "object") {
+      if (dest[key] === null || typeof dest[key] === "undefined") dest[key] = {};
+      merge(dest[key], src[key]);
     }
   }
 };

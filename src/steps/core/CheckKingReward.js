@@ -70,7 +70,7 @@ export default class CheckKingReward extends Step {
           captcha = await this.solveCaptchaByDownload(captchaBuffer);
         }
 
-        logger.log(`Guess: ${captcha}`);
+        logger.log(`> Guess: ${captcha}`);
 
       } catch (e) {
         logger.log("Error while solving captcha: ");
@@ -78,12 +78,12 @@ export default class CheckKingReward extends Step {
       }
 
       if (!captcha || captcha.length !== 5 || captcha.includes("?")) {
-        logger.log('Unable to solve, loading new captcha…');
+        logger.log('> Unable to solve, loading new captcha…');
         await this.loadNewCaptcha(ctx);
         continue;
       }
 
-      logger.log('Submitting…');
+      logger.log('> Submitting…');
       await this.submitCaptcha(ctx, captcha);
 
       const hasKingReward = await page.hasKingReward();

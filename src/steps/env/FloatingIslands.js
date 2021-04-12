@@ -32,6 +32,7 @@ export default class FloatingIslands extends EnvironmentModule {
     const { user, logger } = ctx;
 
     const enemyStatus = op.get(user, "enviroment_atts.enemy_state");
+    const hasEnemyStatusChanged = this.hasValueChanged("enemyStatus", enemyStatus);
 
     const enemyName = op.get(user, "enviroment_atts.hunting_site_atts.enemy.name");
     const isHighAltitude = this.isHighAltitude(user);
@@ -51,7 +52,7 @@ export default class FloatingIslands extends EnvironmentModule {
       }
 
     } else if (enemyStatus === "enemyDefeated") { // defeated
-      if (this.hasValueChanged("enemyStatus", enemyStatus)) {
+      if (hasEnemyStatusChanged) {
         logger.log(`Defeated ${enemyName}!`);
       } else {
         logger.log(`${enemyName} was already defeated. Staying on island.`);

@@ -38,7 +38,7 @@ function load() {
     const defaultConfig = loadYamlSync(new URL("default.yml", import.meta.url));
 
     const baseConfigUrl = new URL(BASE_SETTINGS_FILE, BASE_SETTINGS_FOLDER_URL);
-    let baseConfig = loadYamlSync(baseConfigUrl);
+    let baseConfig = loadYamlSync(baseConfigUrl, {});
 
     let userConfig = {};
 

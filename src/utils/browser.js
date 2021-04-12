@@ -150,7 +150,8 @@ async function openHeadlessBrowser(headlessConfig) {
   const launchConfig = {
     headless: true,
     defaultViewport: { width: 1024, height: 768 },
-    userDataDir: USER_DATA_DIR
+    userDataDir: USER_DATA_DIR,
+    args: ['--no-sandbox', '--disable-gpu']
   };
 
   console.log("Opening headless browser…");

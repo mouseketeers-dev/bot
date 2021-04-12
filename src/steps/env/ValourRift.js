@@ -7,6 +7,8 @@ export default class ValourRift extends EnvironmentModule {
   initialize(config) {
     this.config = config;
     this.farmingSetup = db.verifySetup(config["farmingSetup"]);
+    this.climbingSetup = db.verifySetup(config["climbingSetup"]);
+    this.eclipseSetup = db.verifySetup(config["eclipseSetup"]);
   }
 
   shouldRun({ user }) {
@@ -16,10 +18,10 @@ export default class ValourRift extends EnvironmentModule {
   async run(ctx) {
     const { user } = ctx;
     const currentState = op.get(user, "enviroment_atts.state");
+    const hasCurrentStateChanged = this.hasValueChanged("currentState", currentState);
 
-    if (currentState === "farming") {
+    if (currentState === "farming" && hasCurrentStateChanged) {
       // no need to update if we're still farming
-      if (!this.hasValueChanged("currentState", currentState)) return;
       await this.updateForOutside(ctx);
     } else if (currentState === "tower") {
       await this.updateForTower(ctx);
@@ -41,23 +43,22 @@ export default class ValourRift extends EnvironmentModule {
 
     logger.log("Current floor: " + currentFloor);
 
-    if (this.isAtEclipse(user)) {
-      logger.log("Boss level: " + op.get(user, "enviroment_atts.boss_name"));
-      await this.toggleChampionFire(ctx, true);
-    } else {
-      await this.toggleChampionFire(ctx, false);
+    const isAtEclipse = op.get(user, "enviroment_atts.is_at_eclipse");
+
+    if (this.hasValueChanged("isAtEclipse", isAtEclipse)) {
+      if (isAtEclipse) {
+        logger.log("Boss level: " + op.get(user, "enviroment_atts.boss_name"));
+        await this.toggleChampionFire(ctx, true);
+        await this.armSetup(ctx, this.eclipseSetup, "Eclipse setup");
+      } else {
+        await this.toggleChampionFire(ctx, false);
+        await this.armSetup(ctx, this.climbingSetup, "Climbing setup");
+      }
     }
   }
 
   //region User Info Getters
 
-  isInsideTower(user) {
-    return op.get(user, "enviroment_atts.state") === "tower";
-  }
-
-  isAtEclipse(user) {
-    return op.get(user, "enviroment_atts.is_at_eclipse");
-  }
 
   //endregion
 

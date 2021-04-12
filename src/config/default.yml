@@ -63,6 +63,12 @@ FloatingIslands:
   leaveHighIslandBeforeHunt: 30   # set to 0 to stay until trove
 
 ValourRift:
+  climbingSetup:
+    charm:
+
+  eclipseSetup:
+    charm:
+
   farmingSetup:
     bait:
     charm:
