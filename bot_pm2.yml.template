@@ -25,7 +25,7 @@ apps:
     script: src/index.js
     node_args: --experimental-specifier-resolution=node
     autorestart: false
-      # env:
+    # env:
       # BASE_SETTINGS: settings.yml
       # USER_SETTINGS: settings_user2.yml
       # COOKIES: cookies_user2.yml

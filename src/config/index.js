@@ -6,7 +6,7 @@ import createDebug from "../utils/debug";
 
 const debug = createDebug("config");
 
-export const INSTANCE_NAME = process.env.name || null;
+export const INSTANCE_NAME = process.env.name?.trim() || null;
 
 const BASE_SETTINGS_FILE = process.env.BASE_SETTINGS?.trim() || "settings.yml";
 debug("Base settings file: " + BASE_SETTINGS_FILE);

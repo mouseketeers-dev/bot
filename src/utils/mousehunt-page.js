@@ -156,6 +156,7 @@ export default class MouseHuntPage {
     return this.page.evaluate("window.user");
   }
 
+  //TODO: sometimes this can be zero. should reload page
   async latestJournalId() {
     return this.page.evaluate("window.lastReadJournalEntryId");
   }

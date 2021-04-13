@@ -60,17 +60,28 @@ export default class FloatingIslands extends EnvironmentModule {
 
       await this.armSavedSetup(ctx);
 
-      const shouldRetreat =
-        (isHighAltitude && islandProgress < this.config["leaveHighIslandBeforeHunt"])
-        || (!isHighAltitude && islandProgress < this.config["leaveLowIslandBeforeHunt"]);
+      let shouldRetreat;
+      const remainingHunts = op.get(user, "enviroment_atts.hunting_site_atts.hunts_remaining");
+      const isIslandFullyExplored = this.isIslandFullyExplored(user);
 
-      if (shouldRetreat || this.isIslandFullyExplored(user)) {
+      if (this.config["stayOnIslandAfterTrove"]) {
+        shouldRetreat = remainingHunts === 0;
+      } else {
+        shouldRetreat = isIslandFullyExplored
+          || (isHighAltitude && islandProgress < this.config["leaveHighIslandBeforeHunt"])
+          || (!isHighAltitude && islandProgress < this.config["leaveLowIslandBeforeHunt"]);
+      }
+
+      if (shouldRetreat) {
         await this.retreat(ctx);
         logger.log("Retreated to launch pad!");
         await this.armSetup(ctx, this.launchPadSetup, "Launch Pad setup");
-      } else {
+      } else if (isIslandFullyExplored) {
         logger.log(`Current progress: ${islandProgress}/${totalSteps}.`);
+      } else {
+        logger.log(`Remaining hunts: ${remainingHunts}.`);
       }
+
 
     } else if (enemyStatus === "enemyApproaching") { // marching
       if (this.hasValueChanged("currentTileIndex", currentTileIndex)) {

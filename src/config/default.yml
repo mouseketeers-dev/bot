@@ -59,6 +59,8 @@ FloatingIslands:
     charm:
     bait:
 
+  stayOnIslandAfterTrove: false   # if true, ignore the two configs below:
+
   leaveLowIslandBeforeHunt: 36    # set to 0 to stay until trove
   leaveHighIslandBeforeHunt: 30   # set to 0 to stay until trove
 
