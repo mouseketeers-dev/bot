@@ -115,7 +115,7 @@ async function tryLoadingMouseHunt(page, retries = 3) {
 
       return;
     } catch (err) {
-      if (err.message.includes("Navigation timeout")) {
+      if (err.message.includes("timeout")) {
         console.log("Timeout! Retrying to load page…");
         // this is ok, continue until retries exhausted.
       } else {

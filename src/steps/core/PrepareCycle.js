@@ -51,6 +51,8 @@ function handleError(error) {
   } else if (error.message.includes("Execution context was destroyed")) {
     // this is likely due to the page just randomly restarting
     return true;
+  } else if (error.message.includes("Navigation timeout")) {
+    return true;
   } else if (error instanceof FlowError && error.shouldReload) {
     return true;
   } else {
