@@ -34,7 +34,7 @@ HourlyTrapCheck:
   trapCheckMinutes: 30
 
 CheckKingReward:
-  mode: download
+  mode: buffer
   maxRetry: 5
 
 UpdateEnvironment:

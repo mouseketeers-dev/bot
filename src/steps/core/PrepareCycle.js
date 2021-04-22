@@ -11,7 +11,7 @@ export default (config) => async function prepareCycle(ctx, next) {
 
   logger.open(`[start] - ${moment().format("DD/MM/YYYY HH:mm:ss")}`);
   state.cycleDelay = config["cycleDelay"];
-
+  
   try {
     state.lastJournalId = await page.latestJournalId();
     await next();

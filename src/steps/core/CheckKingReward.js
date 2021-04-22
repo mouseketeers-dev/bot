@@ -61,7 +61,7 @@ export default class CheckKingReward extends Step {
       let captcha;
 
       try {
-        logger.log(`Attempt #${attempt}:`);
+        logger.log(`Attempt #${attempt + 1}:`);
 
 
         if (this.mode === "buffer") {
@@ -131,7 +131,7 @@ export default class CheckKingReward extends Step {
     await fs.writeFile(captchaName, buffer);
     return captchaName;
   }
-
+ 
   async loadNewCaptcha({ page }) {
     await page.evaluate("app.views.HeadsUpDisplayView.hud.getNewPuzzle()");
     await page.waitForSuccessfulResponse("puzzleimage.php");

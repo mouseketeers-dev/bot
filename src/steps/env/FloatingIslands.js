@@ -76,7 +76,7 @@ export default class FloatingIslands extends EnvironmentModule {
         await this.retreat(ctx);
         logger.log("Retreated to launch pad!");
         await this.armSetup(ctx, this.launchPadSetup, "Launch Pad setup");
-      } else if (isIslandFullyExplored) {
+      } else if (!isIslandFullyExplored) {
         logger.log(`Current progress: ${islandProgress}/${totalSteps}.`);
       } else {
         logger.log(`Remaining hunts: ${remainingHunts}.`);
@@ -145,6 +145,672 @@ export default class FloatingIslands extends EnvironmentModule {
   //endregion
 }
 
+const pirates = {
+  "hunting_site_atts": {
+    "num_hunts_per_mod": 10,
+    "island_mod_panels": [
+      {
+        "type": "frost_shrine",
+        "name": "Shrine of Frost",
+        "description": "A shrine dedicated to the Warden of Frost!",
+        "level": 1,
+        "pips": [
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          }
+        ],
+        "sign": "+",
+        "is_complete": true,
+        "is_failed": null,
+        "is_active": null,
+        "is_enemy_active": null,
+        "rewards": [],
+        "has_rewards": null,
+        "special_effect_description": {
+          "short": "+1 Speed",
+          "full": "Progress through the island faster."
+        },
+        "has_special_effect_description": true,
+        "loot_cache_multiplier": 1,
+        "has_loot_cache_multiplier": null,
+        "has_high_tier_island_multiplier": null
+      },
+      {
+        "type": "sky_pirates",
+        "name": "Sky Pirate Den",
+        "description": "PIRATES!",
+        "level": 1,
+        "pips": [
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          }
+        ],
+        "sign": "+",
+        "is_complete": true,
+        "is_failed": null,
+        "is_active": null,
+        "is_enemy_active": null,
+        "rewards": [
+          {
+            "type": "sky_pirate_cheese_curd_crafting_item",
+            "name": "Corsair's Curd",
+            "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/c07822d0195ffbd72dfed12b647ea6b9.gif?cv=2",
+            "quantity": 2,
+            "loot_cache_quantity": 0,
+            "total_quantity": 2
+          }
+        ],
+        "has_rewards": true,
+        "special_effect_description": {
+          "short": "Pirates!",
+          "full": "Unleashes Sky Pirate mice"
+        },
+        "has_special_effect_description": true,
+        "loot_cache_multiplier": 1,
+        "has_loot_cache_multiplier": null,
+        "has_high_tier_island_multiplier": null
+      },
+      {
+        "type": "sky_pirates",
+        "name": "Sky Pirate Den",
+        "description": "PIRATES!",
+        "level": 2,
+        "pips": [
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          }
+        ],
+        "sign": "x",
+        "is_complete": true,
+        "is_failed": null,
+        "is_active": null,
+        "is_enemy_active": null,
+        "rewards": [
+          {
+            "type": "sky_pirate_cheese_curd_crafting_item",
+            "name": "Corsair's Curd",
+            "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/c07822d0195ffbd72dfed12b647ea6b9.gif?cv=2",
+            "quantity": 2,
+            "loot_cache_quantity": 0,
+            "total_quantity": 2
+          }
+        ],
+        "has_rewards": true,
+        "special_effect_description": {
+          "short": "Mo' Pirates!",
+          "full": "Unleashes WAY TOO MANY Sky Pirate mice"
+        },
+        "has_special_effect_description": true,
+        "loot_cache_multiplier": 1,
+        "has_loot_cache_multiplier": null,
+        "has_high_tier_island_multiplier": null
+      },
+      {
+        "type": "gem_bonus",
+        "name": "Sky Glass Formation",
+        "description": "Provides a Sky Glass bonus to the mice on this island.",
+        "level": 1,
+        "pips": [
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": false
+          },
+          {
+            "owner": "player",
+            "has_changed": null,
+            "is_current": true
+          }
+        ],
+        "sign": "x",
+        "is_complete": true,
+        "is_failed": null,
+        "is_active": true,
+        "is_enemy_active": null,
+        "rewards": [
+          {
+            "type": "floating_islands_cloud_gem_stat_item",
+            "name": "Sky Glass",
+            "thumb": "https://www.mousehuntgame.com/images/items/stats/275d274836db81086a24e89f29de4cbf.gif?cv=2",
+            "quantity": 2,
+            "loot_cache_quantity": 0,
+            "total_quantity": 2
+          }
+        ],
+        "has_rewards": true,
+        "special_effect_description": null,
+        "has_special_effect_description": null,
+        "loot_cache_multiplier": 1,
+        "has_loot_cache_multiplier": null,
+        "has_high_tier_island_multiplier": null
+      }
+    ],
+    "island_loot": [
+      {
+        "type": "floating_islands_cloud_gem_stat_item",
+        "name": "Sky Glass",
+        "thumb": "https://www.mousehuntgame.com/images/items/stats/275d274836db81086a24e89f29de4cbf.gif?cv=2",
+        "quantity": 2
+      },
+      {
+        "type": "floating_islands_sky_ore_stat_item",
+        "name": "Sky Ore",
+        "thumb": "https://www.mousehuntgame.com/images/items/stats/246e7d6fc6f428b15effaf0b4200b838.gif?cv=2",
+        "quantity": 1
+      },
+      {
+        "type": "sky_pirate_cheese_curd_crafting_item",
+        "name": "Corsair's Curd",
+        "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/c07822d0195ffbd72dfed12b647ea6b9.gif?cv=2",
+        "quantity": 4
+      }
+    ],
+    "is_fuel_enabled": null,
+    "is_island_fully_explored": true,
+    "warden_stones": {
+      "fog_shrine": null,
+      "frost_shrine": true,
+      "rain_shrine": true,
+      "wind_shrine": null
+    },
+    "island_type": "hydro_island",
+    "island_power_type": "hdr",
+    "island_name": "Hydro Island",
+    "island_name_indefinite_article": "a",
+    "island_mod_types": [
+      "frost_shrine",
+      "sky_pirates",
+      "sky_pirates",
+      "gem_bonus"
+    ],
+    "activated_island_mod_types": [
+      "frost_shrine",
+      "sky_pirates",
+      "sky_pirates",
+      "gem_bonus"
+    ],
+    "island_progress": 40,
+    "enemy_progress": 0,
+    "hunts_remaining": 31,
+    "sky_wardens_caught": 2,
+    "is_high_tier_island": null,
+    "is_high_altitude": null,
+    "has_enemy": true,
+    "enemy": {
+      "id": 1031,
+      "type": "frost_warden",
+      "name": "Warden of Frost",
+      "abbreviated_name": "Warden of Frost",
+      "thumb": "https://www.mousehuntgame.com/images/mice/thumb/f74e1429b75c5aed568ea3ff188f626b.gif?cv=2"
+    },
+    "is_enemy_encounter": false,
+    "has_encountered_enemy": true,
+    "has_defeated_enemy": true,
+    "enemy_encounter_hunts_remaining": 0,
+    "one_time_reward": [
+      {
+        "type": "light_floating_loot_cache_convertible",
+        "name": "Low Altitude Treasure Trove",
+        "thumb": "https://www.mousehuntgame.com/images/items/convertibles/671b9528a32b0190c2579ec18830f594.gif?cv=2"
+      },
+      {
+        "type": "sky_conqueror_egg_convertible",
+        "name": "Sky Conqueror Egg",
+        "thumb": "https://www.mousehuntgame.com/images/items/convertibles/91ca841f03e1710428ebe7c70f019102.gif?cv=2"
+      }
+    ],
+    "has_treasure_trove": true
+  },
+  "airship": {
+    "user_id": "7833142",
+    "oculus_level": 8,
+    "sail": {
+      "type": "airship_sail_lny_ox_stat_item",
+      "image": "https://www.mousehuntgame.com/images/ui/hud/floating_islands/airship/sail/airship_sail_lny_ox_stat_item.png"
+    },
+    "hull": {
+      "type": "airship_hull_lny_ox_stat_item",
+      "image": "https://www.mousehuntgame.com/images/ui/hud/floating_islands/airship/hull/airship_hull_lny_ox_stat_item.png"
+    },
+    "balloon": {
+      "type": "airship_balloon_lny_ox_stat_item",
+      "image": "https://www.mousehuntgame.com/images/ui/hud/floating_islands/airship/balloon/airship_balloon_lny_ox_stat_item.png"
+    },
+    "can_upgrade_oculus": null
+  },
+  "saved_trap_setup": {
+    "can_arm_setup": true,
+    "has_setup": true,
+    "is_active": true,
+    "items": {
+      "base": {
+        "type": "valour_rift_prestige_base",
+        "name": "Prestige Base",
+        "thumb": "https://www.mousehuntgame.com/images/items/bases/01ae18279319523f4884c155d867c9de.jpg?cv=2",
+        "classification": "base",
+        "is_item_armed": true,
+        "can_arm_item": true
+      },
+      "weapon": {
+        "type": "pirate_sleigh_weapon",
+        "name": "S.S. Scoundrel Sleigher Trap",
+        "thumb": "https://www.mousehuntgame.com/images/items/weapons/56e4fb25a93d7350014242a3d953a203.jpg?cv=2",
+        "classification": "weapon",
+        "is_item_armed": true,
+        "can_arm_item": true
+      },
+      "bait": {
+        "type": "sky_pirate_cheese",
+        "name": "Sky Pirate Swiss Cheese",
+        "thumb": "https://www.mousehuntgame.com/images/items/bait/d3d3578292674d2a242f70211c040cfa.gif?cv=2",
+        "classification": "bait",
+        "is_item_armed": true,
+        "can_arm_item": true
+      },
+      "trinket": {
+        "type": "rift_ultimate_luck_trinket",
+        "name": "Rift Ultimate Luck Charm",
+        "thumb": "https://www.mousehuntgame.com/images/items/trinkets/84c7bfd90f3578fa74487f4575c3f50d.gif?cv=2",
+        "classification": "trinket",
+        "is_item_armed": true,
+        "can_arm_item": true
+      }
+    }
+  },
+  "can_retreat": true,
+  "power_type_name": "Hydro",
+  "island_paper_doll": {
+    "is_high_tier": false,
+    "type": "hydro_island",
+    "mods": [
+      {
+        "type": "frost_shrine",
+        "level": 1
+      },
+      {
+        "type": "sky_pirates",
+        "level": 2
+      },
+      {
+        "type": "gem_bonus",
+        "level": 1
+      }
+    ]
+  },
+  "sky_wardens_total": 4,
+  "sky_cheese_recipe": {
+    "result_type": "sky_cheese",
+    "action_type": "shop",
+    "shop_environment": "floating_islands",
+    "upsell_item_type": "magic_essence_craft_item",
+    "vanilla_items": [
+      {
+        "type": "cloud_curd_crafting_item",
+        "name": "Cloud Curd",
+        "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/044b2af27e74a06750e68c489c9165df.gif?cv=2",
+        "required_quantity": 1,
+        "required_quantity_formatted": "1",
+        "is_duplicate_item": null
+      },
+      {
+        "type": "gold_stat_item",
+        "name": "Gold",
+        "thumb": "https://www.mousehuntgame.com/images/items/stats/d8f90a569d52e7ea228ad0f1cc51516d.gif?cv=2",
+        "required_quantity": 1000,
+        "required_quantity_formatted": "1,000",
+        "is_duplicate_item": null
+      }
+    ],
+    "vanilla_action": {
+      "label": "Craft Cloud Cheesecake for best results.",
+      "css_class": "vanilla",
+      "result_quantity": 1,
+      "name": "Cloud Cheesecake",
+      "subject_type": "sky_cheese",
+      "boolean_string_value": false
+    },
+    "upsell_items": [
+      {
+        "type": "cloud_curd_crafting_item",
+        "name": "Cloud Curd",
+        "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/044b2af27e74a06750e68c489c9165df.gif?cv=2",
+        "required_quantity": 1,
+        "required_quantity_formatted": "1",
+        "is_duplicate_item": null
+      },
+      {
+        "type": "magic_essence_craft_item",
+        "name": "Magic Essence",
+        "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/f8f0bb0476b1a7d481407fa797525622.gif?cv=2",
+        "required_quantity": 1,
+        "required_quantity_formatted": "1",
+        "is_duplicate_item": null
+      }
+    ],
+    "upsell_action": {
+      "label": "Craft with Magic Essence for an increased yield!",
+      "css_class": "upsell",
+      "result_quantity": 2,
+      "name": "Cloud Cheesecake",
+      "subject_type": "sky_cheese_pack_small_convertible",
+      "boolean_string_value": true
+    },
+    "show_full_recipes": true,
+    "show_recipes_in_groups": true
+  },
+  "pirate_cheese_recipe": {
+    "result_type": "sky_pirate_cheese",
+    "action_type": "shop",
+    "shop_environment": "floating_islands",
+    "upsell_item_type": "magic_essence_craft_item",
+    "vanilla_items": [
+      {
+        "type": "sky_pirate_cheese_curd_crafting_item",
+        "name": "Corsair's Curd",
+        "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/c07822d0195ffbd72dfed12b647ea6b9.gif?cv=2",
+        "required_quantity": 20,
+        "required_quantity_formatted": "20",
+        "is_duplicate_item": null
+      },
+      {
+        "type": "gold_stat_item",
+        "name": "Gold",
+        "thumb": "https://www.mousehuntgame.com/images/items/stats/d8f90a569d52e7ea228ad0f1cc51516d.gif?cv=2",
+        "required_quantity": 2000,
+        "required_quantity_formatted": "2,000",
+        "is_duplicate_item": null
+      }
+    ],
+    "vanilla_action": {
+      "label": "Craft Sky Pirate Swiss Cheese to catch those corsairs.",
+      "css_class": "vanilla",
+      "result_quantity": 1,
+      "name": "Sky Pirate Swiss",
+      "subject_type": "sky_pirate_cheese",
+      "boolean_string_value": false
+    },
+    "upsell_items": [
+      {
+        "type": "sky_pirate_cheese_curd_crafting_item",
+        "name": "Corsair's Curd",
+        "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/c07822d0195ffbd72dfed12b647ea6b9.gif?cv=2",
+        "required_quantity": 20,
+        "required_quantity_formatted": "20",
+        "is_duplicate_item": null
+      },
+      {
+        "type": "magic_essence_craft_item",
+        "name": "Magic Essence",
+        "thumb": "https://www.mousehuntgame.com/images/items/crafting_items/thumbnails/f8f0bb0476b1a7d481407fa797525622.gif?cv=2",
+        "required_quantity": 1,
+        "required_quantity_formatted": "1",
+        "is_duplicate_item": null
+      }
+    ],
+    "upsell_action": {
+      "label": "Craft with Magic Essence for an increased yield!",
+      "css_class": "upsell",
+      "result_quantity": 2,
+      "name": "Sky Pirate Swiss",
+      "subject_type": "pirate_cheese_pack_small_convertible",
+      "boolean_string_value": true
+    },
+    "show_full_recipes": true,
+    "show_recipes_in_groups": true
+  },
+  "items": {
+    "sky_cheese": {
+      "quantity": "1,106",
+      "status": "",
+      "can_purchase": true
+    },
+    "sky_pirate_cheese": {
+      "quantity": "38",
+      "status": "active",
+      "can_purchase": true
+    },
+    "floating_islands_sky_ore_stat_item": {
+      "quantity": "9,859",
+      "status": ""
+    },
+    "floating_islands_cloud_gem_stat_item": {
+      "quantity": "9,801",
+      "status": ""
+    },
+    "cloud_curd_crafting_item": {
+      "quantity": "2,104",
+      "status": ""
+    },
+    "sky_pirate_cheese_curd_crafting_item": {
+      "quantity": "773",
+      "status": ""
+    },
+    "skysoft_silk_stat_item": {
+      "quantity": "9",
+      "status": ""
+    },
+    "sky_sprocket_stat_item": {
+      "quantity": "12",
+      "status": ""
+    },
+    "enchanted_wing_stat_item": {
+      "quantity": "11",
+      "status": ""
+    },
+    "cloudstone_bangle_stat_item": {
+      "quantity": "13",
+      "status": ""
+    },
+    "bottled_wind_stat_item": {
+      "quantity": "168",
+      "status": ""
+    },
+    "sky_scrambler_stat_item": {
+      "quantity": "280",
+      "status": ""
+    },
+    "gold_stat_item": {
+      "quantity": "50,437,231",
+      "status": ""
+    },
+    "magic_essence_craft_item": {
+      "quantity": "478",
+      "status": ""
+    }
+  },
+  "has_flight_log": null,
+  "has_power_type_warning": null,
+  "has_sky_cheese_warning": null,
+  "has_sky_pirate_cheese_warning": null,
+  "on_island": true,
+  "enemy_state": "enemyDefeated",
+  "island_reward_state": "rewardClaimed",
+  "hunts_remaining_css_class": "default",
+  "hunts_remaining": 31,
+  "hunts": "hunts",
+  "has_treasure_trove": true
+};
 
 const environment_atts_encountering = {
   "hunting_site_atts": {
