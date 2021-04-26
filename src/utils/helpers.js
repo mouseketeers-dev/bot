@@ -52,6 +52,10 @@ export function createTempFile(ext) {
   return path.resolve(os.tmpdir(), fileName);
 }
 
+export function getTempFolder(folderName) {
+  return path.resolve(os.tmpdir(), folderName);
+}
+
 export function coalesce(...args) {
   for (const arg of args) {
     if (arg) return arg;

@@ -13,16 +13,20 @@ debug("Base settings file: " + BASE_SETTINGS_FILE);
 
 // if base_settings is a file, resolve it to "user" folder.
 // if it's an absolute path, use that path instead.
-export const BASE_SETTINGS_FOLDER_URL = (() => {
+export const USER_FOLDER = (() => {
   const folder = path.dirname(BASE_SETTINGS_FILE);
   if (folder === ".") {
-    return new URL("../../user/", import.meta.url);
+    return url.fileURLToPath(new URL("../../user/", import.meta.url));
   } else {
-    return url.pathToFileURL(folder + "/");
+    return folder + "/";
   }
 })();
 
-debug("Settings folder: " + BASE_SETTINGS_FOLDER_URL);
+export function getUserFolderPath(subPath) {
+  return path.resolve(USER_FOLDER, subPath);
+}
+
+debug("Settings folder: " + USER_FOLDER);
 
 export const USER_SETTINGS_FILE = coalesce(
   process.env.USER_SETTINGS?.trim(),
@@ -37,14 +41,14 @@ function load() {
   try {
     const defaultConfig = loadYamlSync(new URL("default.yml", import.meta.url));
 
-    const baseConfigUrl = new URL(BASE_SETTINGS_FILE, BASE_SETTINGS_FOLDER_URL);
-    let baseConfig = loadYamlSync(baseConfigUrl, {});
+    const baseConfigPath = getUserFolderPath(BASE_SETTINGS_FILE);
+    let baseConfig = loadYamlSync(baseConfigPath, {});
 
     let userConfig = {};
 
     if (USER_SETTINGS_FILE) {
-      const userConfigUrl = new URL(USER_SETTINGS_FILE, BASE_SETTINGS_FOLDER_URL);
-      userConfig = loadYamlSync(userConfigUrl, {});
+      const userConfigPath = getUserFolderPath(USER_SETTINGS_FILE);
+      userConfig = loadYamlSync(userConfigPath, {});
     }
 
     const mergedConfig = deepMerge(defaultConfig, baseConfig, userConfig);
