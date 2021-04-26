@@ -1,5 +1,5 @@
 /**
- * docker run -rm -it -v $PWD/user:/usr/bot/user -v $PWD/src:/usr/bot/src mouseketeers/bot:latest yarn run login
+ * docker run --rm -it -v $PWD/user:/usr/bot/user -v $PWD/src:/usr/bot/src mouseketeers/bot:latest yarn run login
  */
 
 import browser from "./utils/browser";
