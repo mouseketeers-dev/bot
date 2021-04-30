@@ -8,7 +8,7 @@ node_modules/
 build/
 
 user/
-!alias.yml.template
+!.gitkeep
 
 bot_pm2.yml
 yarn.lock
