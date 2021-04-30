@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import config from './config';
+import config, {INSTANCE_NAME, USER_FOLDER} from './config';
 import browser from './utils/browser';
 import flow from "./steps/flow";
 import server from "./server";
@@ -12,7 +12,7 @@ import MouseHuntPage from "./utils/mousehunt-page";
 // import SegfaultHandler from 'segfault-handler';
 
 async function main() {
-  const page = await browser.initializePage(config["browser"]);
+  const page = await browser.initializePage(config["browser"], USER_FOLDER, INSTANCE_NAME);
   const mhPage = MouseHuntPage.wrap(page);
 
   if (config.server?.port) {

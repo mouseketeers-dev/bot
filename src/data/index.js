@@ -1,6 +1,6 @@
 import InvalidConfigError from "../errors/invalid-config-error";
 import {loadYamlSync} from "../utils/helpers";
-import {BASE_SETTINGS_FOLDER_URL} from "../config";
+import {getUserFolderPath} from "../config";
 import createDebug from "../utils/debug";
 
 const debug = createDebug("data");
@@ -12,7 +12,7 @@ const database = {
 
 const ItemTypes = ["weapon", "base", "charm", "bait"];
 
-const ALIAS_URL = new URL("alias.yml", BASE_SETTINGS_FOLDER_URL);
+const ALIAS_URL = getUserFolderPath("alias.yml");
 const aliases = loadYamlSync(ALIAS_URL, {});
 
 debug("Alias file url: " + ALIAS_URL);

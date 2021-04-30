@@ -1,13 +1,12 @@
 import fetch from "node-fetch";
 import puppeteer from "puppeteer";
 import {promises as fs} from 'fs';
-import url from 'url';
+import path from 'path';
 
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
 
-import {BLANK_LINE, coalesce, sleep} from "./helpers";
-import config, {BASE_SETTINGS_FOLDER_URL, INSTANCE_NAME} from "../config";
+import {BLANK_LINE, coalesce, sleep, getTempFolder} from "./helpers";
 import createDebug from "./debug";
 
 const debug = createDebug("browser");
@@ -15,23 +14,7 @@ const debug = createDebug("browser");
 //TODO: clean browser profile
 // https://github.com/puppeteer/puppeteer/issues/866
 // https://github.com/puppeteer/puppeteer/issues/1791
-
-const COOKIES_FILE = coalesce(
-  process.env.COOKIES,
-  config.browser["cookies"],
-  INSTANCE_NAME ? `cookies_${INSTANCE_NAME}.json` : "cookies.json"
-);
-const COOKIES_URL = new URL(COOKIES_FILE, BASE_SETTINGS_FOLDER_URL);
-const { MOUSEHUNT_USERNAME, MOUSEHUNT_PASSWORD } = process.env;
-
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4427.0 Safari/537.36";
-
-const USER_DATA_DIR = url.fileURLToPath(
-  new URL(
-    INSTANCE_NAME ? "puppeteer_dev_chrome_profile-" + INSTANCE_NAME : "puppeteer_dev_chrome_profile",
-    BASE_SETTINGS_FOLDER_URL
-  )
-);
 
 const Modes = {
   Window: "window",
@@ -39,38 +22,19 @@ const Modes = {
   DevTools: "devtools"
 };
 
-debug("Cookies file: " + COOKIES_FILE);
-debug("Cookies url: " + COOKIES_URL);
-
 export default {
   initializePage
 };
 
-async function initializePage(browserConfig) {
+async function initializePage(browserConfig, userFolderPath, instanceName) {
   const mode = coalesce(
     process.env.BROWSER_MODE,
     browserConfig.mode
   ).toLowerCase();
 
-  const config = browserConfig[mode] || {};
-  let browser;
+  const { userDataDir, cookiesPath } = initializeConstants(userFolderPath, instanceName);
 
-  switch (mode) {
-    case Modes.Window:
-      browser = await openWindowBrowser(config);
-      break;
-
-    case Modes.Headless:
-      browser = await openHeadlessBrowser(config);
-      break;
-
-    case Modes.DevTools:
-      browser = await openDevToolsBrowser(config);
-      break;
-
-    default:
-      throw new InvalidConfigError(`Unknown value "${mode}" for "browser.mode".`);
-  }
+  const browser = await prepareBrowser(mode, browserConfig, userDataDir);
 
   browser.on("disconnected", () => {
     console.log("Browser is closed! Stopping bot…");
@@ -79,20 +43,32 @@ async function initializePage(browserConfig) {
 
   const currentPages = await browser.pages();
   const page = currentPages.length > 0 ? currentPages[0] : await browser.newPage();
-  const currentUrl = await page.url();
 
-  if (mode !== Modes.DevTools) await setCookies(page);
+  if (mode !== Modes.DevTools) await setCookies(page, cookiesPath);
   if (mode === Modes.Headless) await page.setUserAgent(USER_AGENT);
 
   if (mode !== Modes.Headless && browserConfig["prefixTitleWithFirstName"]) {
     await prefixTitleWithFirstName(page);
   }
 
+  let currentUrl = await page.url();
+
   if (!currentUrl.includes("www.mousehuntgame.com")) {
     await tryLoadingMouseHunt(page);
   }
 
-  await checkForCamp(page, mode);
+  currentUrl = await page.url();
+
+  if (currentUrl.endsWith("login.php")) {
+    await waitForLogin(page, mode, {
+      username: process.env.MOUSEHUNT_USERNAME || browserConfig.username,
+      password: process.env.MOUSEHUNT_PASSWORD || browserConfig.password
+    });
+
+    await saveCookies(page, cookiesPath);
+  } else if (!currentUrl.endsWith("camp.php")) {
+    throw new BrowserError("Expecting 'camp.php' but found: " + currentUrl);
+  }
 
   const user = await page.evaluate("window.user");
   if (user) {
@@ -104,7 +80,51 @@ async function initializePage(browserConfig) {
   return page;
 }
 
+function initializeConstants(userFolderPath, instanceName) {
+  const userDataDir = instanceName ? getTempFolder("puppeteer_dev_chrome_profile-" + instanceName) : null;
+
+  debug("Chrome profile folder:" + userDataDir);
+
+  const cookiesFile = coalesce(
+    process.env.COOKIES,
+    instanceName ? `cookies_${instanceName}.json` : "cookies.json"
+  );
+  const cookiesPath = path.resolve(userFolderPath, cookiesFile);
+
+  debug("Cookies file: " + cookiesFile);
+  debug("Cookies path: " + cookiesPath);
+
+  return {
+    userDataDir, cookiesFile, cookiesPath
+  };
+}
+
+
 //region Browsers
+
+async function prepareBrowser(mode, browserConfig, userDataDir) {
+  const config = browserConfig?.[mode] || {};
+  let browser;
+
+  switch (mode) {
+    case Modes.Window:
+      browser = await openWindowBrowser(config, userDataDir);
+      break;
+
+    case Modes.Headless:
+      browser = await openHeadlessBrowser(config, userDataDir);
+      break;
+
+    case Modes.DevTools:
+      browser = await openDevToolsBrowser(config);
+      break;
+
+    default:
+      throw new InvalidConfigError(`Unknown value "${mode}" for "browser.mode".`);
+  }
+
+  return browser;
+}
 
 async function tryLoadingMouseHunt(page, retries = 3) {
   for (let i = 0; i < retries; i++) {
@@ -129,12 +149,13 @@ async function tryLoadingMouseHunt(page, retries = 3) {
 }
 
 //TODO: use proxy-chain to block ads: https://github.com/apify/proxy-chain#anonymizeproxyproxyurl-callback
-function openWindowBrowser(windowConfig) {
+function openWindowBrowser(windowConfig, userDataDir) {
   const launchConfig = {
     headless: false,
     defaultViewport: null,
-    userDataDir: USER_DATA_DIR
   };
+
+  if (userDataDir) launchConfig.userDataDir = userDataDir;
 
   const browserPath = windowConfig["browserPath"];
 
@@ -146,13 +167,14 @@ function openWindowBrowser(windowConfig) {
   return puppeteer.launch(launchConfig);
 }
 
-async function openHeadlessBrowser(headlessConfig) {
+async function openHeadlessBrowser(headlessConfig, userDataDir) {
   const launchConfig = {
     headless: true,
     defaultViewport: { width: 1024, height: 768 },
-    userDataDir: USER_DATA_DIR,
-    args: ['--no-sandbox', '--disable-gpu']
+    args: ['--disable-gpu']
   };
+
+  if (userDataDir) launchConfig.userDataDir = userDataDir;
 
   console.log("Opening headless browser…");
   return puppeteer.launch(launchConfig);
@@ -187,7 +209,7 @@ async function openDevToolsBrowser(devToolsConfig) {
 }
 
 function prefixTitleWithFirstName(page) {
-  return page.evaluateOnNewDocument((userSettingsName) => {
+  return page.evaluateOnNewDocument(() => {
     let prefixed = false;
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -199,7 +221,7 @@ function prefixTitleWithFirstName(page) {
       function prefixTitle() {
         if (!document.title.startsWith("[")) {
           observer.disconnect();
-          const name = window.user ? window.user["firstname"] : userSettingsName;
+          const name = window?.user?.["firstname"] || "";
           document.title = `[${name}] ${document.title}`;
           observer.observe(target, { childList: true });
         }
@@ -208,33 +230,22 @@ function prefixTitleWithFirstName(page) {
       setTimeout(prefixTitle, 1000);
       prefixed = true;
     });
-  }, INSTANCE_NAME);
+  });
 }
 
 //endregion
 
 //region Setup & Login
 
-async function checkForCamp(page, mode) {
-  const currentUrl = await page.url();
-
-  if (currentUrl.endsWith("camp.php")) {
-    // okay
-  } else if (currentUrl.endsWith("login.php")) {
-    await waitForLogin(page, mode);
-  } else {
-    throw new BrowserError("Expecting 'camp.php' but found: " + currentUrl);
-  }
-}
-
-async function waitForLogin(page, mode) {
-  if (MOUSEHUNT_USERNAME && MOUSEHUNT_PASSWORD) {
-    console.log(`Logging in using username '${MOUSEHUNT_USERNAME}'…`);
+async function waitForLogin(page, mode, credentials) {
+  const { username, password } = credentials;
+  if (username && password) {
+    console.log(`Logging in using username '${username}'…`);
     await page.evaluate("app.pages.LoginPage.showSignIn()");
 
     await sleep("2s");
-    await page.type(".scrollingContainer.login input.username", MOUSEHUNT_USERNAME);
-    await page.type(".scrollingContainer.login input.password", MOUSEHUNT_PASSWORD);
+    await page.type(".scrollingContainer.login input.username", username);
+    await page.type(".scrollingContainer.login input.password", password);
 
     await sleep("1s");
     await page.evaluate("app.pages.LoginPage.loginHitGrab()");
@@ -252,7 +263,6 @@ async function waitForLogin(page, mode) {
   }
 
   await page.waitForFunction(() => document.body.classList.contains('PageCamp'), { timeout: 0 });
-  await saveCookies(page);
 }
 
 async function isFileAccessible(fileUrl) {
@@ -264,13 +274,15 @@ async function isFileAccessible(fileUrl) {
   }
 }
 
-async function setCookies(page) {
-  if (await isFileAccessible(COOKIES_URL)) {
+async function setCookies(page, cookiesPath) {
+  const cookiesFile = path.basename(cookiesPath);
+
+  if (await isFileAccessible(cookiesPath)) {
     try {
-      const cookiesString = (await fs.readFile(COOKIES_URL)).toString();
+      const cookiesString = (await fs.readFile(cookiesPath)).toString();
       const cookies = JSON.parse(cookiesString);
       await page.setCookie(...cookies);
-      console.log(`Cookies loaded from "${COOKIES_FILE}".`);
+      console.log(`Cookies loaded from "${cookiesFile}".`);
     } catch (err) {
       console.error("Unable to read cookies!");
       console.error(err);
@@ -280,10 +292,12 @@ async function setCookies(page) {
   }
 }
 
-async function saveCookies(page) {
+async function saveCookies(page, cookiesPath) {
   const cookies = await page.cookies();
-  await fs.writeFile(COOKIES_URL, JSON.stringify(cookies, null, 2));
-  console.log(`Cookies saved to "${COOKIES_FILE}".`);
+  await fs.writeFile(cookiesPath, JSON.stringify(cookies, null, 2));
+
+  const cookiesFile = path.basename(cookiesPath);
+  console.log(`Cookies saved to "${cookiesFile}".`);
 }
 
 //endregion

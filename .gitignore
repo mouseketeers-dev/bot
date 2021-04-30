@@ -11,3 +11,4 @@ user/
 !alias.yml.template
 
 bot_pm2.yml
+yarn.lock
