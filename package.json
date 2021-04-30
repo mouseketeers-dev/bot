@@ -3,6 +3,7 @@
   "version": "0.5.11",
   "description": "",
   "scripts": {
+    "install": "cp src/config/default.yml user/settings.yml.template && cp src/data/alias.yml.template user/alias.yml.template",
     "bot": "node --experimental-specifier-resolution=node src/index.js",
     "login": "node --experimental-specifier-resolution=node src/login.js",
     "start": "pm2 start bot_pm2.yml"

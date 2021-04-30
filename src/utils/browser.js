@@ -155,6 +155,8 @@ function openWindowBrowser(windowConfig, userDataDir) {
     defaultViewport: null,
   };
 
+  if (userDataDir) launchConfig.userDataDir = userDataDir;
+
   const browserPath = windowConfig["browserPath"];
 
   if (browserPath) {
@@ -169,9 +171,10 @@ async function openHeadlessBrowser(headlessConfig, userDataDir) {
   const launchConfig = {
     headless: true,
     defaultViewport: { width: 1024, height: 768 },
-    userDataDir: userDataDir,
-    args: ['--no-sandbox', '--disable-gpu']
+    args: ['--disable-gpu']
   };
+
+  if (userDataDir) launchConfig.userDataDir = userDataDir;
 
   console.log("Opening headless browser…");
   return puppeteer.launch(launchConfig);
