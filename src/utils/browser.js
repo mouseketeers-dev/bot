@@ -12,7 +12,9 @@ import createDebug from "./debug";
 
 const debug = createDebug("browser");
 
-puppeteer.use(AdblockerPlugin());
+puppeteer.use(AdblockerPlugin({
+  blockTrackers: true
+}));
 
 //TODO: clean browser profile
 // https://github.com/puppeteer/puppeteer/issues/866
