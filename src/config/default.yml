@@ -2,13 +2,24 @@ browser:
   # window/headless/devtools
   mode: window
 
-  # cookiesFile: cookies.yml
-
   window:
   # browserPath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
 
   devtools:
     port: 21222
+
+  headless:
+    args:
+      - --disable-canvas-aa
+      - --disable-2d-canvas-clip-aa
+      - --disable-gl-drawing-for-test
+      - --disable-setuid-sandbox
+      - --disable-dev-shm-usage
+      - --disable-accelerated-2d-canvas
+      - --no-first-run
+      - --disable-gpu
+      - --mute-audio
+      - --disable-breakpad
 
   prefixTitleWithFirstName: true
 

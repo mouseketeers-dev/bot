@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-extra";
+import AdblockerPlugin from "puppeteer-extra-plugin-adblocker";
 import {promises as fs} from 'fs';
 import path from 'path';
 
@@ -10,6 +11,8 @@ import {BLANK_LINE, coalesce, sleep, getTempFolder} from "./helpers";
 import createDebug from "./debug";
 
 const debug = createDebug("browser");
+
+puppeteer.use(AdblockerPlugin());
 
 //TODO: clean browser profile
 // https://github.com/puppeteer/puppeteer/issues/866
