@@ -171,7 +171,8 @@ async function openHeadlessBrowser(headlessConfig, userDataDir) {
   const launchConfig = {
     headless: true,
     defaultViewport: { width: 1024, height: 768 },
-    args: ['--disable-gpu']
+    // https://stackoverflow.com/questions/49008008/chrome-headless-puppeteer-too-much-cpu
+    args: headlessConfig?.args ?? []
   };
 
   if (userDataDir) launchConfig.userDataDir = userDataDir;
