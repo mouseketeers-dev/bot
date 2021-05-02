@@ -20,6 +20,8 @@ browser:
       - --disable-gpu
       - --mute-audio
       - --disable-breakpad
+      - --no-zygote
+      - --no-sandbox
 
   prefixTitleWithFirstName: true
 
