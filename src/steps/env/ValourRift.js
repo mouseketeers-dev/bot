@@ -9,6 +9,9 @@ export default class ValourRift extends EnvironmentModule {
     this.farmingSetup = db.verifySetup(config["farmingSetup"]);
     this.climbingSetup = db.verifySetup(config["climbingSetup"]);
     this.eclipseSetup = db.verifySetup(config["eclipseSetup"]);
+    this.eclipseUmbraSetup = db.verifySetup(config["eclipseUmbraSetup"]);
+    this.climbingUmbraSetup = db.verifySetup(config["climbingUmbraSetup"]);
+    this.toggleFireUponEclipse = config["toggleFireUponEclipse"];
   }
 
   shouldRun({ user }) {
@@ -50,15 +53,27 @@ export default class ValourRift extends EnvironmentModule {
     if (this.hasValueChanged("isAtEclipse", isAtEclipse)) {
       if (isAtEclipse) {
         logger.log("Boss level: " + op.get(user, "enviroment_atts.boss_name"));
-        if (!isUltimateUmbra) {
+
+        if (this.toggleFireUponEclipse) {
           await this.toggleChampionFire(ctx, true);
         }
-        await this.armSetup(ctx, this.eclipseSetup, "Eclipse setup");
+
+        if (isUltimateUmbra) {
+          await this.armSetup(ctx, this.eclipseUmbraSetup, "Eclipse Umbra setup");
+        } else {
+          await this.armSetup(ctx, this.eclipseSetup, "Eclipse setup");
+        }
+
       } else {
-        if (!isUltimateUmbra) {
+        if (this.toggleFireUponEclipse) {
           await this.toggleChampionFire(ctx, false);
         }
-        await this.armSetup(ctx, this.climbingSetup, "Climbing setup");
+
+        if (isUltimateUmbra) {
+          await this.armSetup(ctx, this.climbingUmbraSetup, "Climbing Umbra setup");
+        } else {
+          await this.armSetup(ctx, this.climbingSetup, "Climbing setup");
+        }
       }
     }
   }

@@ -84,6 +84,14 @@ ValourRift:
   eclipseSetup:
     charm:
 
+  climbingUmbraSetup:
+    charm:
+
+  eclipseUmbraSetup:
+    charm:
+
   farmingSetup:
     bait:
     charm:
+
+  toggleFireUponEclipse: true
