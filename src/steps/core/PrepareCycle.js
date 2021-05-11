@@ -11,7 +11,7 @@ export default (config) => async function prepareCycle(ctx, next) {
 
   logger.open(`[start] - ${moment().format("DD/MM/YYYY HH:mm:ss")}`);
   state.cycleDelay = config["cycleDelay"];
-  
+
   try {
     state.lastJournalId = await page.latestJournalId();
     await next();
@@ -52,6 +52,8 @@ function handleError(error) {
     // this is likely due to the page just randomly restarting
     return true;
   } else if (error.message.includes("Navigation timeout")) {
+    return true;
+  } else if (error.message.includes("Cannot read property 'has_puzzle' of undefined")) {
     return true;
   } else if (error instanceof FlowError && error.shouldReload) {
     return true;
