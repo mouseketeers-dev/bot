@@ -805,3 +805,7 @@
 - name: Darkest Chocolate Bunny Trap
   key: dark_chocolate_bunny_weapon
   id: 3239
+
+- name: Chrome School of Sharks Trap
+  key: chrome_school_of_sharks_weapon
+  id: 3257
