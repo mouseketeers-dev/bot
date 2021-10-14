@@ -2,14 +2,18 @@ import fs from "fs";
 
 import config, {INSTANCE_NAME, USER_FOLDER} from './config';
 import browser from './utils/browser';
-import flow from "./steps/flow";
 import server from "./server";
 
 import State from "./utils/state";
 import Logger from "./utils/logger";
 import MouseHuntPage from "./utils/mousehunt-page";
+import {coalesce} from "./utils/helpers";
+
+import {createFlow} from "./flow/flow";
+import MouseHuntFlow from "./MouseHuntFlow";
 
 // import SegfaultHandler from 'segfault-handler';
+
 
 async function main() {
   const page = await browser.initializePage(config["browser"], USER_FOLDER, INSTANCE_NAME);
@@ -29,16 +33,13 @@ function showBanner() {
 }
 
 async function startFlow(page) {
-  const flowSteps = config["flow"];
-  const mainFlow = await flow.createFlow(flowSteps, config);
+  const mainFlow = await createFlow(MouseHuntFlow, config);
 
   const state = new State();
   const logger = new Logger();
   const ctx = { page, state, logger };
 
-  while (true) {
-    await mainFlow(ctx);
-  }
+  await mainFlow(ctx);
 }
 
 showBanner();

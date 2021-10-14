@@ -11,13 +11,15 @@ export const INSTANCE_NAME = process.env.name?.trim() || null;
 const BASE_SETTINGS_FILE = process.env.BASE_SETTINGS?.trim() || "settings.yml";
 debug("Base settings file: " + BASE_SETTINGS_FILE);
 
-// if base_settings is a file, resolve it to "user" folder.
-// if it's an absolute path, use that path instead.
+// USER_FOLDER ===============================
+
 export const USER_FOLDER = (() => {
   const folder = path.dirname(BASE_SETTINGS_FILE);
+
+  // if BASE_SETTINGS is a filename, USER_FOLDER is the default "bot/user" folder.
   if (folder === ".") {
     return url.fileURLToPath(new URL("../../user/", import.meta.url));
-  } else {
+  } else { // if BASE_SETTINGS is an absolute file path, get the path's folder.
     return folder + "/";
   }
 })();
@@ -26,10 +28,12 @@ export function getUserFolderPath(subPath) {
   return path.resolve(USER_FOLDER, subPath);
 }
 
-debug("Settings folder: " + USER_FOLDER);
+debug("User settings folder: " + USER_FOLDER);
+
+// USER_SETTINGS_FILE ===============================
 
 export const USER_SETTINGS_FILE = coalesce(
-  process.env.USER_SETTINGS?.trim(),
+  process.env.USER_SETTINGS?.trim(), // use USER_SETTINGS if non-empty
   (INSTANCE_NAME ? `settings_${INSTANCE_NAME}.yml` : null)
 );
 

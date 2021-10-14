@@ -21,11 +21,6 @@ puppeteer.use(AdblockerPlugin({
 // https://github.com/puppeteer/puppeteer/issues/1791
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4427.0 Safari/537.36";
 
-const Modes = {
-  Window: "window",
-  Headless: "headless",
-  DevTools: "devtools"
-};
 
 export default {
   initializePage
@@ -150,7 +145,6 @@ async function tryLoadingMouseHunt(page, retries = 3) {
 
     console.error("Unable to load page!");
   }
-
 }
 
 //TODO: use proxy-chain to block ads: https://github.com/apify/proxy-chain#anonymizeproxyproxyurl-callback
@@ -214,30 +208,30 @@ async function openDevToolsBrowser(devToolsConfig) {
   return browser;
 }
 
-function prefixTitleWithFirstName(page) {
-  return page.evaluateOnNewDocument(() => {
-    let prefixed = false;
-
-    document.addEventListener('DOMContentLoaded', function () {
-      const target = document.querySelector('title');
-      if (prefixed || !target) return;
-
-      const observer = new MutationObserver(prefixTitle);
-
-      function prefixTitle() {
-        if (!document.title.startsWith("[")) {
-          observer.disconnect();
-          const name = window?.user?.["firstname"] || "";
-          document.title = `[${name}] ${document.title}`;
-          observer.observe(target, { childList: true });
-        }
-      }
-
-      setTimeout(prefixTitle, 1000);
-      prefixed = true;
-    });
-  });
-}
+// function prefixTitleWithFirstName(page) {
+//   return page.evaluateOnNewDocument(() => {
+//     let prefixed = false;
+//
+//     document.addEventListener('DOMContentLoaded', function () {
+//       const target = document.querySelector('title');
+//       if (prefixed || !target) return;
+//
+//       const observer = new MutationObserver(prefixTitle);
+//
+//       function prefixTitle() {
+//         if (!document.title.startsWith("[")) {
+//           observer.disconnect();
+//           const name = window?.user?.["firstname"] || "";
+//           document.title = `[${name}] ${document.title}`;
+//           observer.observe(target, { childList: true });
+//         }
+//       }
+//
+//       setTimeout(prefixTitle, 1000);
+//       prefixed = true;
+//     });
+//   });
+// }
 
 //endregion
 
@@ -271,32 +265,32 @@ async function waitForLogin(page, mode, credentials) {
   await page.waitForFunction(() => document.body.classList.contains('PageCamp'), { timeout: 0 });
 }
 
-async function isFileAccessible(fileUrl) {
-  try {
-    await fs.access(fileUrl);
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
+// async function isFileAccessible(fileUrl) {
+//   try {
+//     await fs.access(fileUrl);
+//     return true;
+//   } catch (err) {
+//     return false;
+//   }
+// }
 
-async function setCookies(page, cookiesPath) {
-  const cookiesFile = path.basename(cookiesPath);
-
-  if (await isFileAccessible(cookiesPath)) {
-    try {
-      const cookiesString = (await fs.readFile(cookiesPath)).toString();
-      const cookies = JSON.parse(cookiesString);
-      await page.setCookie(...cookies);
-      console.log(`Cookies loaded from "${cookiesFile}".`);
-    } catch (err) {
-      console.error("Unable to read cookies!");
-      console.error(err);
-    }
-  } else {
-    console.log("No cookies file found.");
-  }
-}
+// async function setCookies(page, cookiesPath) {
+//   const cookiesFile = path.basename(cookiesPath);
+//
+//   if (await isFileAccessible(cookiesPath)) {
+//     try {
+//       const cookiesString = (await fs.readFile(cookiesPath)).toString();
+//       const cookies = JSON.parse(cookiesString);
+//       await page.setCookie(...cookies);
+//       console.log(`Cookies loaded from "${cookiesFile}".`);
+//     } catch (err) {
+//       console.error("Unable to read cookies!");
+//       console.error(err);
+//     }
+//   } else {
+//     console.log("No cookies file found.");
+//   }
+// }
 
 async function saveCookies(page, cookiesPath) {
   const cookies = await page.cookies();

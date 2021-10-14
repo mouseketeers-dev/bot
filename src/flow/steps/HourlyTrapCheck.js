@@ -1,5 +1,5 @@
 import moment from 'moment';
-import HuntTriggeringStep from "../hunt-triggering-step";
+import HuntTriggeringStep from "../HuntTriggeringStep";
 
 export default class HourlyTrapCheck extends HuntTriggeringStep {
 

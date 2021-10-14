@@ -29,13 +29,16 @@ server:
 # port: 9000
 
 flow:
-  - PrepareCycle
-  - ClosePopups
-  - CheckMaintenance
-  - HourlyTrapCheck
-  - SoundHorn
-  - CheckKingReward
-  - UpdateEnvironment
+  - PrepareBrowser
+  - PreparePage
+  - Loop:
+      - PrepareCycle
+      - ClosePopups
+      - CheckMaintenance
+      - HourlyTrapCheck
+      - SoundHorn
+      - CheckKingReward
+      - UpdateEnvironment
 
 PrepareCycle:
   cycleDelay: 15s

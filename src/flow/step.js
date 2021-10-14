@@ -1,10 +1,17 @@
 import NotImplementedError from "../errors/not-implemented-error";
 import StepLoadError from "../errors/step-load-error";
+import createDebug from "../utils/debug";
+
+const debug = createDebug("step");
 
 export default class Step {
 
   get name() {
     return this.constructor.name;
+  }
+
+  get configKey() {
+    return this.name;
   }
 
   /**
@@ -26,18 +33,43 @@ export default class Step {
       const { logger } = ctx;
       logger.open(`[${this.name}]`);
 
-      const closeBlockThenNext = () => {
+      const closeLogBlockThenNext = () => {
         logger.close();
         return next();
       };
 
-      if (!await this.shouldRun(ctx)) return closeBlockThenNext();
-      await this.run(ctx, closeBlockThenNext);
+      if (!await this.shouldRun(ctx)) return closeLogBlockThenNext();
+      await this.run(ctx, closeLogBlockThenNext);
     };
   }
 
   async run(ctx, next) {
     throw new NotImplementedError("Step.run() must be implemented.");
+  }
+
+  /**
+   * Returns an async function(ctx, next)
+   */
+  static async newInstance(clazz, config) {
+    debug("loading step: " + clazz.name);
+
+    if (clazz.prototype instanceof Step) {
+      const step = new clazz();
+      await step.initialize(config);
+      return step.build();
+
+    } else if (typeof clazz === "function") {
+      const step = clazz(config);
+
+      if (typeof step === "function") {
+        return step;
+      } else {
+        throw new StepLoadError(clazz.name, 'Unknown step function type! Found: () => ' + JSON.stringify(step));
+      }
+
+    } else {
+      throw new StepLoadError(clazz.name, 'Unknown step type! Found: ' + JSON.stringify(clazz));
+    }
   }
 
   /**
@@ -62,7 +94,7 @@ export default class Step {
 
     if (module.prototype instanceof Step) {
       const step = new module();
-      await step.initialize(configs[name]);
+      await step.initialize(configs[step.configKey]);
       return step.build();
 
     } else if (typeof module === "function") {

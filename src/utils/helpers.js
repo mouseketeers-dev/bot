@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs, {promises as fsp} from "fs";
 import yaml from "js-yaml";
 import path from "path";
 import os from "os";
@@ -67,6 +67,15 @@ export function coalesce(...args) {
 export function isFileAccessibleSync(fileUrl) {
   try {
     fs.accessSync(fileUrl);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+export async function isFileAccessible(fileUrl) {
+  try {
+    await fsp.access(fileUrl);
     return true;
   } catch (err) {
     return false;

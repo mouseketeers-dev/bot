@@ -1,4 +1,4 @@
-import HuntTriggeringStep from "../hunt-triggering-step";
+import HuntTriggeringStep from "../HuntTriggeringStep";
 import {sleep} from "../../utils/helpers";
 
 export default class SoundHorn extends HuntTriggeringStep {
