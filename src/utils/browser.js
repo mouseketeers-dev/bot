@@ -7,7 +7,7 @@ import path from 'path';
 import InvalidConfigError from "../errors/invalid-config-error";
 import BrowserError from "../errors/browser-error";
 
-import {BLANK_LINE, coalesce, sleep, getTempFolder} from "./helpers";
+import {BLANK_LINE, coalesce, getTempFolder, sleep} from "./helpers";
 import createDebug from "./debug";
 
 const debug = createDebug("browser");
@@ -135,7 +135,7 @@ async function tryLoadingMouseHunt(page, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       await page.goto('https://www.mousehuntgame.com', {
-        waitUntil: 'networkidle0'
+        waitUntil: 'networkidle2'
       });
 
       return;

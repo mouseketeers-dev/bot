@@ -30,7 +30,7 @@ export default class MouseHuntPage {
   }
 
   reload() {
-    return this.page.reload({ waitUntil: "networkidle0" });
+    return this.page.reload({ waitUntil: "networkidle2" });
   }
 
   waitForSuccessfulResponse(urlFragment) {
@@ -75,7 +75,12 @@ export default class MouseHuntPage {
     }, selector, timeout);
   }
 
-  waitForNetworkIdle({ timeout = 10000, waitForFirstRequest = 1000, waitForLastRequest = 500, maxInflightRequests = 0 } = {}) {
+  waitForNetworkIdle({
+                       timeout = 10000,
+                       waitForFirstRequest = 1000,
+                       waitForLastRequest = 500,
+                       maxInflightRequests = 0
+                     } = {}) {
     const page = this.page;
 
     let inflight = 0;
