@@ -30,7 +30,7 @@ export default class MouseHuntPage {
   }
 
   reload() {
-    return this.page.reload({ waitUntil: "networkidle2" });
+    return this.page.reload({ waitUntil: "domcontentloaded" });
   }
 
   waitForSuccessfulResponse(urlFragment) {

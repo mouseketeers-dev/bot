@@ -135,7 +135,7 @@ async function tryLoadingMouseHunt(page, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       await page.goto('https://www.mousehuntgame.com', {
-        waitUntil: 'networkidle2'
+        waitUntil: 'domcontentloaded'
       });
 
       return;
@@ -147,9 +147,9 @@ async function tryLoadingMouseHunt(page, retries = 3) {
         throw err;
       }
     }
-
-    console.error("Unable to load page!");
   }
+
+  console.error("Unable to load page!");
 
 }
 
