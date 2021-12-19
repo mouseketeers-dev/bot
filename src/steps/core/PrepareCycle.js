@@ -4,8 +4,6 @@ import FlowError from "../../errors/flow-error";
 
 const MAX_CONSECUTIVE_RELOAD_COUNT = 5;
 
-let consecutiveReloadCount = 0;
-
 export default (config) => async function prepareCycle(ctx, next) {
   const { page, state, logger } = ctx;
 
@@ -15,7 +13,7 @@ export default (config) => async function prepareCycle(ctx, next) {
   try {
     state.lastJournalId = await page.latestJournalId();
     await next();
-    consecutiveReloadCount = 0; // reset reload count
+
   } catch (err) {
     logger.log(BLANK_LINE);
     logger.log("Encountered error:");
@@ -26,19 +24,45 @@ export default (config) => async function prepareCycle(ctx, next) {
     if (!shouldReload) {
       console.log("Unrecoverable error. Exiting…");
       process.exit(1);
-    } else if (consecutiveReloadCount >= MAX_CONSECUTIVE_RELOAD_COUNT) {
-      console.log("Reloaded page too many times. Exiting…");
-      process.exit(1);
-    } else { // if (shouldReload) 
-      console.log("Reloading page due to error…");
-      await page.reload();
-      consecutiveReloadCount += 1;
+    } else { // if (shouldReload)
+      await tryReload(ctx);
     }
-
   }
 
   logger.close("[end]\n" + BLANK_LINE, true);
   await sleep(state.cycleDelay);
+}
+
+async function tryReload(ctx) {
+  const { page } = ctx;
+
+  let consecutiveReloadCount = 0;
+
+  for (let t = 0; t < MAX_CONSECUTIVE_RELOAD_COUNT; t++) {
+    consecutiveReloadCount += 1;
+
+    try {
+      console.log("Reloading page due to error…");
+      await page.reload();
+      return;
+    } catch (err) {
+      console.log(err);
+
+      const shouldReload = handleError(err);
+
+      if (!shouldReload) {
+        console.log("Unrecoverable error. Exiting…");
+        process.exit(1);
+      } else if (consecutiveReloadCount >= MAX_CONSECUTIVE_RELOAD_COUNT) {
+        console.log("Reloaded page too many times. Exiting…");
+        process.exit(1);
+      } else { // if (shouldReload)
+        const waitTime = 15 * consecutiveReloadCount;
+        console.log(`Waiting for ${waitTime}s before reloading…`);
+        await sleep(waitTime + "s");
+      }
+    }
+  }
 }
 
 /**
