@@ -1,6 +1,6 @@
 {
   "name": "mouseketeer-bot",
-  "version": "0.6.10",
+  "version": "0.6.11",
   "description": "",
   "scripts": {
     "install": "cp src/config/default.yml user/settings.yml.template && cp src/data/alias.yml.template user/alias.yml.template",
